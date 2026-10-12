@@ -160,6 +160,7 @@ export default function AnalysisToolPage() {
 
   const [error, setError] = useState("");
   const [decimalPlaces, setDecimalPlaces] = useState(2);
+  const decimalPlacesRef = useRef(decimalPlaces);
   const [lastQuote, setLastQuote] = useState<number | null>(null);
   const [lastTickTime, setLastTickTime] = useState<number | null>(null);
 
@@ -242,15 +243,12 @@ export default function AnalysisToolPage() {
             const size = Number(data.pip_size);
 
             if (Number.isFinite(size) && size > 0) {
-              setDecimalPlaces(
-                Math.max(
-                  0,
-                  Math.min(
-                    10,
-                    Math.round(-Math.log10(size))
-                  )
-                )
+              const detectedDecimals = Math.max(
+                0,
+                Math.min(10, Math.round(-Math.log10(size)))
               );
+              decimalPlacesRef.current = detectedDecimals;
+              setDecimalPlaces(detectedDecimals);
             }
           }
 
@@ -262,7 +260,7 @@ export default function AnalysisToolPage() {
                   Math.round(-Math.log10(Number(data.pip_size)))
                 )
               )
-            : decimalPlaces;
+            : decimalPlacesRef.current;
 
           const historicalTicks: Tick[] = prices.map(
             (price, index) => ({
@@ -307,7 +305,7 @@ export default function AnalysisToolPage() {
           const tick: Tick = {
             quote,
             epoch,
-            digit: getLastDigit(quote, decimalPlaces),
+            digit: getLastDigit(quote, decimalPlacesRef.current),
           };
 
           setLastQuote(quote);
@@ -330,7 +328,7 @@ export default function AnalysisToolPage() {
       if (socketRef.current !== socket) return;
 
       setError(
-        "Connection failed. Check your internet connection and Deriv app ID."
+        "The browser could not connect to Deriv. Check your internet connection, VPN or firewall, then select Refresh Analysis. This page currently uses Deriv test App ID 1089; a registered numeric App ID should be used for production."
       );
 
       setLoading(false);
@@ -345,7 +343,6 @@ export default function AnalysisToolPage() {
   }, [
     market,
     sampleSize,
-    decimalPlaces,
     requestId,
   ]);
 
