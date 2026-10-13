@@ -25,8 +25,6 @@ const MARKETS = [
 
 const SAMPLE_SIZES = [100, 500, 950, 1000];
 
-const APP_ID = "1089";
-
 const COLORS = {
   background: "#080d18",
   panel: "#111827",
@@ -200,7 +198,7 @@ export default function AnalysisToolPage() {
     setLastTickTime(null);
 
     const socket = new WebSocket(
-      `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`
+      "wss://ws.binaryws.com/websockets/v3"
     );
 
     socketRef.current = socket;
@@ -328,7 +326,7 @@ export default function AnalysisToolPage() {
       if (socketRef.current !== socket) return;
 
       setError(
-        "The browser could not connect to Deriv. Check your internet connection, VPN or firewall, then select Refresh Analysis. This page currently uses Deriv test App ID 1089; a registered numeric App ID should be used for production."
+        "Could not connect to Deriv market data. Check your internet connection or firewall, then select Refresh Analysis and try again."
       );
 
       setLoading(false);
