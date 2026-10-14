@@ -48,6 +48,48 @@ const ChartWrapper = lazy(() => import('../chart/chart-wrapper'));
 const Tutorial = lazy(() => import('../tutorials'));
 const AnalysisTool = lazy(() => import('../analysis-tool'));
 
+
+const SmartPipsFeatureTab = ({ feature, handleTabChange }: { feature: 'free-bots' | 'risk-calculator' | 'account' | 'history'; handleTabChange: (index: number) => void }) => {
+    const [capital, setCapital] = useState('100');
+    const [riskPercent, setRiskPercent] = useState('2');
+    const [stake, setStake] = useState('1');
+    const balance = Math.max(0, Number(capital) || 0);
+    const risk = Math.min(100, Math.max(0, Number(riskPercent) || 0));
+    const stakeValue = Math.max(0, Number(stake) || 0);
+    const budget = balance * risk / 100;
+    const entries = stakeValue > 0 ? Math.floor(budget / stakeValue) : 0;
+    const panel: React.CSSProperties = { maxWidth: 1100, margin: '24px auto', padding: 24, color: 'var(--text-general)', border: '1px solid var(--border-normal)', borderRadius: 14 };
+    const card: React.CSSProperties = { padding: 18, border: '1px solid var(--border-normal)', borderRadius: 12, background: 'var(--general-section-1)' };
+    if (feature === 'free-bots') return <section style={panel}>
+        <h2>Free Bots</h2>
+        <p>Explore these starter strategy pathways. These are learning shortcuts, not automated bots; they will not place trades on their own.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+            <div style={card}><h3>Even / Odd</h3><p>Review last-digit parity and recent digit distribution.</p><button onClick={() => handleTabChange(4)}>Open Digit Analysis</button></div>
+            <div style={card}><h3>Matches / Differs</h3><p>Study selected-digit match rates before testing a strategy.</p><button onClick={() => handleTabChange(4)}>Open Digit Analysis</button></div>
+            <div style={card}><h3>Rise / Fall</h3><p>Observe price movement on charts before building a bot.</p><button onClick={() => handleTabChange(2)}>Open Charts</button></div>
+        </div>
+        <p>Use a demo account first. No strategy guarantees profit.</p>
+    </section>;
+    if (feature === 'risk-calculator') return <section style={panel}>
+        <h2>Risk Calculator</h2><p>Estimate a risk budget before trading. This is a planning aid, not a prediction or guarantee of safety.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14 }}>
+            <label>Account balance<input style={{ display: 'block', width: '100%', marginTop: 8 }} type="number" min="0" step="any" value={capital} onChange={e => setCapital(e.target.value)} /></label>
+            <label>Risk limit (%)<input style={{ display: 'block', width: '100%', marginTop: 8 }} type="number" min="0" max="100" step="0.1" value={riskPercent} onChange={e => setRiskPercent(e.target.value)} /></label>
+            <label>Stake per trade<input style={{ display: 'block', width: '100%', marginTop: 8 }} type="number" min="0" step="any" value={stake} onChange={e => setStake(e.target.value)} /></label>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 30, marginTop: 22 }}><div><small>Risk budget</small><h2>{budget.toFixed(2)}</h2></div><div><small>Stake-sized entries within budget</small><h2>{entries}</h2></div></div>
+    </section>;
+    if (feature === 'account') return <section style={panel}><h2>Account Management</h2>
+        <p>Use the account selector in the app header to switch between your available Deriv accounts. The account balance shown by the app should come from your connected Deriv session.</p>
+        <p><strong>Before trading:</strong> confirm whether the selected account is demo or real, check the currency and balance, and never share your password or API token.</p>
+        <p>This panel does not change account settings, transfer funds, or override Deriv's account controls.</p>
+    </section>;
+    return <section style={panel}><h2>Trade History</h2>
+        <p>Your dedicated history tab is ready as the place for your real records, but it is not yet connected to Deriv transaction/statement data.</p>
+        <p>No sample trades are shown as real. The next integration step is to request authorized transaction history from Deriv and display the returned records, timestamps, contract details, and profit/loss.</p>
+    </section>;
+};
+
 const AppWrapper = observer(() => {
     const { connectionStatus } = useApiBase();
     const { dashboard, load_modal, run_panel, quick_strategy, summary_card, blockly_store } = useStore();
@@ -79,7 +121,7 @@ const AppWrapper = observer(() => {
     const { clear } = summary_card;
     const { DASHBOARD, BOT_BUILDER } = DBOT_TABS;
     const init_render = React.useRef(true);
-    const hash = ['dashboard', 'bot_builder', 'chart', 'tutorial', 'analysis-tool'];
+    const hash = ['dashboard', 'bot_builder', 'chart', 'tutorial', 'analysis-tool', 'free-bots', 'risk-calculator', 'account-management', 'trade-history'];
     const { isDesktop } = useDevice();
     const location = useLocation();
     const navigate = useNavigate();
@@ -472,6 +514,10 @@ const AppWrapper = observer(() => {
                                     <AnalysisTool />
                                 </Suspense>
                             </div>
+                            <div label={<span>Free Bots</span>} id='id-free-bots'><SmartPipsFeatureTab feature='free-bots' handleTabChange={handleTabChange} /></div>
+                            <div label={<span>Risk Calculator</span>} id='id-risk-calculator'><SmartPipsFeatureTab feature='risk-calculator' handleTabChange={handleTabChange} /></div>
+                            <div label={<span>Account Management</span>} id='id-account-management'><SmartPipsFeatureTab feature='account' handleTabChange={handleTabChange} /></div>
+                            <div label={<span>Trade History</span>} id='id-trade-history'><SmartPipsFeatureTab feature='history' handleTabChange={handleTabChange} /></div>
                         </Tabs>
                         {!isDesktop && right_tab_shadow && <span className='tabs-shadow tabs-shadow--right' />}{' '}
                     </div>
