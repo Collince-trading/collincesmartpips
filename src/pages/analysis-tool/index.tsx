@@ -23,19 +23,19 @@ const MARKETS = [
   { label: "Volatility 100 (1s)", symbol: "1HZ100V" },
 ];
 
-const SAMPLE_SIZES = [100, 500, 950, 1000];
+const SAMPLE_SIZES = [50, 100, 500, 950, 1000, 2000, 5000];
 
 const COLORS = {
-  background: "#080d18",
-  panel: "#111827",
-  border: "#263449",
-  text: "#f1f5f9",
-  muted: "#94a3b8",
-  green: "#22c55e",
-  blue: "#3b82f6",
-  orange: "#f97316",
+  background: "#0b0b0b",
+  panel: "#ffffff",
+  border: "#e2e8f0",
+  text: "#10233f",
+  muted: "#64748b",
+  green: "#10b981",
+  blue: "#3478f6",
+  orange: "#f59e0b",
   red: "#ef4444",
-  black: "#64748b",
+  black: "#6b7280",
 };
 
 function getLastDigit(
@@ -73,7 +73,7 @@ function Panel({
       style={{
         background: COLORS.panel,
         border: `1px solid ${COLORS.border}`,
-        borderRadius: 14,
+        borderRadius: 12,
         padding: 18,
         minWidth: 0,
       }}
@@ -108,7 +108,7 @@ function StatCard({
   return (
     <div
       style={{
-        background: COLORS.background,
+        background: "#f8fafc",
         border: `1px solid ${COLORS.border}`,
         borderRadius: 10,
         padding: 14,
@@ -451,10 +451,10 @@ export default function AnalysisToolPage() {
   const maxPairCount = Math.max(1, ...pairCounts.flat());
 
   const controlStyle: React.CSSProperties = {
-    background: COLORS.background,
-    color: COLORS.text,
+    background: "#ffffff",
+    color: "#10233f",
     border: `1px solid ${COLORS.border}`,
-    borderRadius: 8,
+    borderRadius: 6,
     padding: "10px 12px",
     width: "100%",
     outline: "none",
@@ -473,10 +473,10 @@ export default function AnalysisToolPage() {
     padding: "10px 12px",
     borderRadius: 8,
     border: `1px solid ${
-      active ? COLORS.green : COLORS.border
+      active ? COLORS.blue : COLORS.border
     }`,
-    background: active ? "#123322" : COLORS.background,
-    color: active ? COLORS.green : COLORS.text,
+    background: active ? "#3478f6" : "#ffffff",
+    color: active ? "#ffffff" : "#10233f",
     cursor: "pointer",
     fontWeight: 600,
     fontSize: 13,
@@ -487,15 +487,15 @@ export default function AnalysisToolPage() {
       style={{
         minHeight: "100vh",
         background: COLORS.background,
-        color: COLORS.text,
-        padding: "24px 16px 48px",
+        color: "#f8fafc",
+        padding: "16px 12px 42px",
         fontFamily:
           "Inter, ui-sans-serif, system-ui, -apple-system, sans-serif",
       }}
     >
       <div
         style={{
-          maxWidth: 1250,
+          maxWidth: 1400,
           margin: "0 auto",
         }}
       >
@@ -507,7 +507,7 @@ export default function AnalysisToolPage() {
             justifyContent: "space-between",
             gap: 16,
             flexWrap: "wrap",
-            marginBottom: 24,
+            marginBottom: 16,
           }}
         >
           <div>
@@ -526,7 +526,7 @@ export default function AnalysisToolPage() {
             <h1
               style={{
                 margin: 0,
-                fontSize: 30,
+                fontSize: 25,
                 fontWeight: 800,
                 letterSpacing: -1,
               }}
@@ -830,7 +830,7 @@ export default function AnalysisToolPage() {
                     <div key={`${tick.epoch}-${index}`} title={`Quote: ${formatQuote(tick.quote, decimalPlaces)} · ${new Date(tick.epoch * 1000).toLocaleTimeString()}`} style={{
                       width: 42, height: 42, borderRadius: "50%", display: "flex",
                       alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      border: `1px solid ${color}`, background: COLORS.background,
+                      border: `1px solid ${color}`, background: "#ffffff",
                       color, fontSize: 18, fontWeight: 900, fontVariantNumeric: "tabular-nums",
                     }}>
                       {tick.digit}
@@ -873,7 +873,7 @@ export default function AnalysisToolPage() {
                 return (
                   <div key={digit} style={{ minWidth: 0, textAlign: "center" }}>
                     <div style={{ color: COLORS.text, fontSize: 10, marginBottom: 5 }}>{pct.toFixed(1)}%</div>
-                    <div style={{ height: 110, display: "flex", alignItems: "flex-end", background: COLORS.background, borderRadius: 7, overflow: "hidden", border: `1px solid ${COLORS.border}` }}>
+                    <div style={{ height: 110, display: "flex", alignItems: "flex-end", background: "#f1f5f9", borderRadius: 7, overflow: "hidden", border: `1px solid ${COLORS.border}` }}>
                       <div title={`Digit ${digit}: ${count} hits (${pct.toFixed(2)}%)`} style={{ width: "100%", height: `${Math.max(count > 0 ? 3 : 0, analyzedTicks.length ? (count / Math.max(1, ...digitCounts)) * 100 : 0)}%`, background: color, borderRadius: "5px 5px 0 0", transition: "height 180ms ease" }} />
                     </div>
                     <div style={{ color, fontSize: 15, fontWeight: 900, marginTop: 7 }}>{digit}</div>
@@ -930,7 +930,7 @@ export default function AnalysisToolPage() {
         </div>
 
         {/* Digit distribution */}
-        {mode === "distribution" && (
+        {true && (
           <Panel title="Digit Distribution (0–9)">
             <p
               style={{
@@ -1180,7 +1180,7 @@ export default function AnalysisToolPage() {
         )}
 
         {/* Even and odd */}
-        {mode === "evenodd" && (
+        {true && (
           <Panel title="Even vs Odd Analysis">
             <div
               style={{
@@ -1270,7 +1270,7 @@ export default function AnalysisToolPage() {
         )}
 
         {/* Over, equal, under */}
-        {mode === "overunder" && (
+        {true && (
           <Panel title="Over / Equal / Under Analysis">
             <p
               style={{
@@ -1399,7 +1399,7 @@ export default function AnalysisToolPage() {
         )}
 
         {/* Matches and differs */}
-        {mode === "matches" && (
+        {true && (
           <Panel title="Matches vs Differs Analysis">
             <p
               style={{
