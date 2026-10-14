@@ -198,7 +198,7 @@ export default function AnalysisToolPage() {
     setLastTickTime(null);
 
     const socket = new WebSocket(
-      "wss://ws.derivws.com/websockets/v3"
+      "wss://api.derivws.com/trading/v1/options/ws/public"
     );
 
     socketRef.current = socket;
@@ -221,7 +221,7 @@ export default function AnalysisToolPage() {
       socket.onclose = null;
       try { socket.close(); } catch { /* already closed */ }
       const fallback = new WebSocket(
-        "wss://ws.binaryws.com/websockets/v3"
+        "wss://api.derivws.com/trading/v1/options/ws/public"
       );
       socketRef.current = fallback;
       attachSocketHandlers(fallback, true);
