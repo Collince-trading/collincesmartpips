@@ -103,10 +103,10 @@ const setSt=(t,on)=>{$('st').textContent=t;$('st').className=on?'on':''};
 /* ---------- Connection ---------- */
 function send(o){if(ws&&ws.readyState==1)ws.send(JSON.stringify(o))}
 function connect(){
- ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+ ws=new WebSocket('wss://api.derivws.com/trading/v1/options/ws/public');
  ws.onopen=()=>{retry=1000;setSt('Live',1);sub();ping=setInterval(()=>send({ping:1}),30000)};
- ws.onclose=()=>{clearInterval(ping);setSt('Reconnecting…',0);retry=Math.min(retry*2,15000);setTimeout(connect,retry)};
- ws.onerror=()=>setSt('Connection error',0);
+ ws.onclose=(event)=>{clearInterval(ping);setSt('Disconnected ('+(event.code||'unknown')+'). Reconnecting…',0);retry=Math.min(retry*2,15000);setTimeout(connect,retry)};
+ ws.onerror=()=>setSt('Connection failed — retrying',0);
  ws.onmessage=e=>{const m=JSON.parse(e.data);
   if(m.error){setSt(m.error.message,0);return}
   if(m.msg_type=='history'){pip=m.pip_size??2;ticks=m.history.prices.map(mk);schedule()}
