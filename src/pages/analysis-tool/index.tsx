@@ -485,7 +485,12 @@ export default function AnalysisToolPage() {
   return (
     <main
       style={{
-        minHeight: "100vh",
+        minHeight: "calc(100vh - 202px)",
+        height: "auto",
+        maxHeight: "calc(100vh - 202px)",
+        overflowY: "auto",
+        overflowX: "hidden",
+        boxSizing: "border-box",
         background: COLORS.background,
         color: "#f8fafc",
         padding: "16px 12px 42px",
