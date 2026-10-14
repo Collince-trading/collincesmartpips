@@ -1032,27 +1032,49 @@ export default function AnalysisToolPage() {
                       border: `1px solid ${isLatestDigit ? color : COLORS.border}`,
                       boxShadow: isLatestDigit ? `0 0 0 2px ${color}55, 0 0 18px ${color}35` : "none",
                       borderRadius: 12,
-                      padding: "22px 14px 14px",
+                      padding: "34px 14px 14px",
                       transition: "all 180ms ease",
+                      transform: isLatestDigit ? "translateY(-2px)" : "none",
                     }}
                   >
                     {isLatestDigit && (
                       <div
                         aria-label={`Latest tick landed on digit ${digit}`}
-                        title={`Latest tick: digit ${digit}`}
+                        title={`LATEST TICK: digit ${digit}`}
                         style={{
                           position: "absolute",
-                          top: -1,
+                          top: -2,
                           left: "50%",
                           transform: "translateX(-50%)",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 2,
+                          zIndex: 3,
+                          pointerEvents: "none",
+                        }}
+                      >
+                        <span style={{
+                          color: "#07111f",
+                          background: "#38e8ef",
+                          border: "1px solid #ffffff",
+                          borderRadius: 5,
+                          padding: "2px 7px",
+                          fontSize: 9,
+                          fontWeight: 900,
+                          letterSpacing: 0.8,
+                          whiteSpace: "nowrap",
+                          boxShadow: "0 0 12px #38e8ef",
+                        }}>LATEST TICK</span>
+                        <div style={{
                           width: 0,
                           height: 0,
-                          borderLeft: "10px solid transparent",
-                          borderRight: "10px solid transparent",
-                          borderTop: `14px solid ${color}`,
-                          filter: `drop-shadow(0 0 5px ${color})`,
-                        }}
-                      />
+                          borderLeft: "13px solid transparent",
+                          borderRight: "13px solid transparent",
+                          borderTop: "17px solid #38e8ef",
+                          filter: "drop-shadow(0 0 5px #38e8ef)",
+                        }} />
+                      </div>
                     )}
                     <div
                       style={{
