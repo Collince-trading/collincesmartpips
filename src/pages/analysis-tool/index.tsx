@@ -1019,16 +1019,41 @@ export default function AnalysisToolPage() {
                     ? (count / analyzedTicks.length) * 100
                     : 0;
 
+                const isLatestDigit = currentDigit === digit;
+
                 return (
                   <div
                     key={digit}
                     style={{
-                      background: COLORS.background,
-                      border: `1px solid ${COLORS.border}`,
-                      borderRadius: 10,
-                      padding: 14,
+                      position: "relative",
+                      background: isLatestDigit
+                        ? "linear-gradient(145deg, #193d5c, #172944)"
+                        : "#0d1b2d",
+                      border: `1px solid ${isLatestDigit ? color : COLORS.border}`,
+                      boxShadow: isLatestDigit ? `0 0 0 2px ${color}55, 0 0 18px ${color}35` : "none",
+                      borderRadius: 12,
+                      padding: "22px 14px 14px",
+                      transition: "all 180ms ease",
                     }}
                   >
+                    {isLatestDigit && (
+                      <div
+                        aria-label={`Latest tick landed on digit ${digit}`}
+                        title={`Latest tick: digit ${digit}`}
+                        style={{
+                          position: "absolute",
+                          top: -1,
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: 0,
+                          height: 0,
+                          borderLeft: "10px solid transparent",
+                          borderRight: "10px solid transparent",
+                          borderTop: `14px solid ${color}`,
+                          filter: `drop-shadow(0 0 5px ${color})`,
+                        }}
+                      />
+                    )}
                     <div
                       style={{
                         display: "flex",
