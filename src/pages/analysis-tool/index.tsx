@@ -198,146 +198,127 @@ export default function AnalysisToolPage() {
     setLastTickTime(null);
 
     const socket = new WebSocket(
-      `wss://ws.derivws.com/websockets/v3?app_id=1089`
+      "wss://ws.derivws.com/websockets/v3?app_id=1089"
     );
 
     socketRef.current = socket;
 
-    socket.onopen = () => {
-      if (socketRef.current !== socket) return;
-
-      setConnected(true);
-
-      // Retrieve historical ticks before starting the live subscription.
-      socket.send(
-        JSON.stringify({
+    // Some networks block one Deriv host. If the primary endpoint fails,
+    // retry the compatible legacy host once and expose the real close reason.
+    let fallbackAttempted = false;
+    let connectionTimer: ReturnType<typeof setTimeout> | undefined;
+    const clearConnectionTimer = () => {
+      if (connectionTimer) clearTimeout(connectionTimer);
+      connectionTimer = undefined;
+    };
+    const openFallback = () => {
+      if (fallbackAttempted || socketRef.current !== socket) return false;
+      fallbackAttempted = true;
+      clearConnectionTimer();
+      socket.onopen = null;
+      socket.onmessage = null;
+      socket.onerror = null;
+      socket.onclose = null;
+      try { socket.close(); } catch { /* already closed */ }
+      const fallback = new WebSocket(
+        "wss://ws.binaryws.com/websockets/v3?app_id=1089"
+      );
+      socketRef.current = fallback;
+      attachSocketHandlers(fallback, true);
+      return true;
+    };
+    const attachSocketHandlers = (activeSocket: WebSocket, isFallback = false) => {
+      activeSocket.onopen = () => {
+        if (socketRef.current !== activeSocket) return;
+        clearConnectionTimer();
+        setConnected(true);
+        setError("");
+        activeSocket.send(JSON.stringify({
           ticks_history: market,
           count: sampleSize,
           end: "latest",
           style: "ticks",
           req_id: requestId(),
-        })
-      );
-    };
-
-    socket.onmessage = (event) => {
-      if (socketRef.current !== socket) return;
-
-      try {
-        const data = JSON.parse(event.data);
-
-        if (data.error) {
-          setError(data.error.message || "Deriv returned an error.");
-          setLoading(false);
-          return;
-        }
-
-        // Read historical ticks.
-        if (data.history?.prices && data.history?.times) {
-          const prices: number[] = data.history.prices;
-          const times: number[] = data.history.times;
-
-          if (data.pip_size) {
-            const size = Number(data.pip_size);
-
-            if (Number.isFinite(size) && size > 0) {
-              const detectedDecimals = Math.max(
-                0,
-                Math.min(10, Math.round(-Math.log10(size)))
-              );
-              decimalPlacesRef.current = detectedDecimals;
-              setDecimalPlaces(detectedDecimals);
-            }
-          }
-
-          const decimals = data.pip_size
-            ? Math.max(
-                0,
-                Math.min(
-                  10,
-                  Math.round(-Math.log10(Number(data.pip_size)))
-                )
-              )
-            : decimalPlacesRef.current;
-
-          const historicalTicks: Tick[] = prices.map(
-            (price, index) => ({
-              quote: Number(price),
-              epoch: Number(times[index]),
-              digit: getLastDigit(Number(price), decimals),
-            })
-          );
-
-          setTicks(historicalTicks.slice(-sampleSize));
-          setLoading(false);
-
-          if (historicalTicks.length > 0) {
-            const last =
-              historicalTicks[historicalTicks.length - 1];
-
-            setLastQuote(last.quote);
-            setLastTickTime(last.epoch);
-          }
-
-          // Start receiving new ticks after history is loaded.
-          socket.send(
-            JSON.stringify({
-              ticks: market,
-              subscribe: 1,
-              req_id: requestId(),
-            })
-          );
-
-          return;
-        }
-
-        // Read live tick updates.
-        if (data.tick) {
-          const quote = Number(data.tick.quote);
-          const epoch = Number(data.tick.epoch);
-
-          if (!Number.isFinite(quote) || !Number.isFinite(epoch)) {
+        }));
+      };
+      activeSocket.onmessage = (event) => {
+        if (socketRef.current !== activeSocket) return;
+        try {
+          const data = JSON.parse(event.data);
+          if (data.error) {
+            setError(`Deriv API error (${data.error.code || "unknown"}): ${data.error.message || "Request rejected."}`);
+            setLoading(false);
             return;
           }
-
-          const tick: Tick = {
-            quote,
-            epoch,
-            digit: getLastDigit(quote, decimalPlacesRef.current),
-          };
-
-          setLastQuote(quote);
-          setLastTickTime(epoch);
-
-          setTicks((previous) => {
-            const next = [...previous, tick];
-            return next.slice(-sampleSize);
-          });
-
+          if (data.history?.prices && data.history?.times) {
+            const prices: number[] = data.history.prices;
+            const times: number[] = data.history.times;
+            if (data.pip_size) {
+              const size = Number(data.pip_size);
+              if (Number.isFinite(size) && size > 0) {
+                const detectedDecimals = Math.max(0, Math.min(10, Math.round(-Math.log10(size))));
+                decimalPlacesRef.current = detectedDecimals;
+                setDecimalPlaces(detectedDecimals);
+              }
+            }
+            const decimals = data.pip_size
+              ? Math.max(0, Math.min(10, Math.round(-Math.log10(Number(data.pip_size)))) )
+              : decimalPlacesRef.current;
+            const historicalTicks: Tick[] = prices.map((price, index) => ({
+              quote: Number(price), epoch: Number(times[index]), digit: getLastDigit(Number(price), decimals),
+            }));
+            setTicks(historicalTicks.slice(-sampleSize));
+            setLoading(false);
+            if (historicalTicks.length > 0) {
+              const last = historicalTicks[historicalTicks.length - 1];
+              setLastQuote(last.quote);
+              setLastTickTime(last.epoch);
+            }
+            activeSocket.send(JSON.stringify({ ticks: market, subscribe: 1, req_id: requestId() }));
+            return;
+          }
+          if (data.tick) {
+            const quote = Number(data.tick.quote);
+            const epoch = Number(data.tick.epoch);
+            if (!Number.isFinite(quote) || !Number.isFinite(epoch)) return;
+            const tick: Tick = { quote, epoch, digit: getLastDigit(quote, decimalPlacesRef.current) };
+            setLastQuote(quote);
+            setLastTickTime(epoch);
+            setTicks((previous) => [...previous, tick].slice(-sampleSize));
+            setLoading(false);
+          }
+        } catch {
+          setError("Unable to process the market data response.");
           setLoading(false);
         }
-      } catch {
-        setError("Unable to process the market data.");
+      };
+      activeSocket.onerror = () => {
+        if (socketRef.current !== activeSocket) return;
+        if (!isFallback && openFallback()) return;
+        setConnected(false);
+        setError("Deriv WebSocket connection failed on both endpoints. Check whether your network, browser, or firewall blocks WebSockets.");
         setLoading(false);
-      }
+        clearConnectionTimer();
+      };
+      activeSocket.onclose = (event) => {
+        if (socketRef.current !== activeSocket) return;
+        setConnected(false);
+        setLoading(false);
+        clearConnectionTimer();
+        if (!connected && !error && event.code !== 1000 && isFallback) {
+          setError(`Deriv connection closed (code ${event.code}${event.reason ? `: ${event.reason}` : ""}).`);
+        }
+      };
+      connectionTimer = setTimeout(() => {
+        if (socketRef.current !== activeSocket || activeSocket.readyState === WebSocket.OPEN) return;
+        if (!isFallback && openFallback()) return;
+        setError("Deriv connection timed out after 12 seconds on both endpoints. Check your network/firewall or verify that WebSockets are allowed.");
+        setLoading(false);
+        setConnected(false);
+      }, 12000);
     };
+    attachSocketHandlers(socket);
 
-    socket.onerror = () => {
-      if (socketRef.current !== socket) return;
-
-      setError(
-        "Could not connect to Deriv market data. Check your internet connection or firewall, then select Refresh Analysis and try again."
-      );
-
-      setLoading(false);
-    };
-
-    socket.onclose = () => {
-      if (socketRef.current !== socket) return;
-
-      setConnected(false);
-      setLoading(false);
-    };
   }, [
     market,
     sampleSize,
