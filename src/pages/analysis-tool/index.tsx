@@ -164,6 +164,10 @@ export default function AnalysisToolPage() {
 
   const socketRef = useRef<WebSocket | null>(null);
   const requestCounterRef = useRef(1);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptRef = useRef(0);
+  const mountedRef = useRef(false);
+  const connectRef = useRef<(() => void) | null>(null);
 
   const requestId = useCallback(() => {
     return requestCounterRef.current++;
@@ -233,6 +237,7 @@ export default function AnalysisToolPage() {
         clearConnectionTimer();
         setConnected(true);
         setError("");
+        reconnectAttemptRef.current = 0;
         activeSocket.send(JSON.stringify({
           ticks_history: market,
           count: sampleSize,
@@ -305,8 +310,18 @@ export default function AnalysisToolPage() {
         setConnected(false);
         setLoading(false);
         clearConnectionTimer();
-        if (!connected && !error && event.code !== 1000 && isFallback) {
-          setError(`Deriv connection closed (code ${event.code}${event.reason ? `: ${event.reason}` : ""}).`);
+        if (event.code !== 1000) {
+          setError(navigator.onLine
+            ? "Market connection interrupted. Reconnecting automatically…"
+            : "Network unavailable. SmartPips will reconnect when your internet returns.");
+        }
+        if (mountedRef.current && navigator.onLine && event.code !== 1000) {
+          if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+          const delay = Math.min(15000, 1000 * Math.pow(2, reconnectAttemptRef.current));
+          reconnectAttemptRef.current = Math.min(reconnectAttemptRef.current + 1, 4);
+          reconnectTimerRef.current = setTimeout(() => {
+            if (mountedRef.current && navigator.onLine) connectRef.current?.();
+          }, delay);
         }
       };
       connectionTimer = setTimeout(() => {
@@ -326,9 +341,43 @@ export default function AnalysisToolPage() {
   ]);
 
   useEffect(() => {
+    mountedRef.current = true;
+    connectRef.current = connect;
     connect();
 
+    const handleOnline = () => {
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+      reconnectAttemptRef.current = 0;
+      setError("Internet restored. Reconnecting to live market…");
+      connectRef.current?.();
+    };
+    const handleOffline = () => {
+      setConnected(false);
+      setLoading(false);
+      setError("Network unavailable. SmartPips will reconnect automatically when your internet returns.");
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        const socket = socketRef.current;
+        if (!socket || socket.readyState === WebSocket.CLOSED || socket.readyState === WebSocket.CLOSING) {
+          connectRef.current?.();
+        }
+      }
+    };
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    document.addEventListener("visibilitychange", handleVisibility);
+
     return () => {
+      mountedRef.current = false;
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
       const socket = socketRef.current;
       socketRef.current = null;
 
