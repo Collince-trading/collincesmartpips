@@ -425,6 +425,31 @@ export default function AnalysisToolPage() {
     return [...analyzedTicks].slice(-30);
   }, [analyzedTicks]);
 
+  const currentDigit = analyzedTicks.length ? analyzedTicks[analyzedTicks.length - 1].digit : null;
+  const mostFrequent = digitRanks[0];
+  const leastFrequent = digitRanks[digitRanks.length - 1];
+  const highCount = analyzedTicks.filter((tick) => tick.digit >= 5).length;
+  const lowCount = analyzedTicks.length - highCount;
+  const currentParity = currentDigit === null ? null : currentDigit % 2 === 0 ? "Even" : "Odd";
+  const currentStreak = useMemo(() => {
+    if (!analyzedTicks.length) return 0;
+    const last = analyzedTicks[analyzedTicks.length - 1].digit % 2;
+    let streak = 0;
+    for (let i = analyzedTicks.length - 1; i >= 0; i--) {
+      if (analyzedTicks[i].digit % 2 !== last) break;
+      streak++;
+    }
+    return streak;
+  }, [analyzedTicks]);
+  const pairCounts = useMemo(() => {
+    const counts = Array.from({ length: 10 }, () => Array(10).fill(0) as number[]);
+    for (let i = 1; i < analyzedTicks.length; i++) {
+      counts[analyzedTicks[i - 1].digit][analyzedTicks[i].digit]++;
+    }
+    return counts;
+  }, [analyzedTicks]);
+  const maxPairCount = Math.max(1, ...pairCounts.flat());
+
   const controlStyle: React.CSSProperties = {
     background: COLORS.background,
     color: COLORS.text,
@@ -817,6 +842,63 @@ export default function AnalysisToolPage() {
             <p style={{ color: COLORS.muted, fontSize: 12, lineHeight: 1.5, margin: "14px 0 0" }}>
               Colors identify frequency rank within the selected sample, not a prediction of the next digit.
             </p>
+          </Panel>
+        </div>
+
+        {/* At-a-glance analyzer dashboard */}
+        <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
+          {[
+            { label: "Ticks Analysed", value: analyzedTicks.length.toLocaleString(), detail: `of ${sampleSize} selected`, color: COLORS.text },
+            { label: "Most Frequent", value: mostFrequent && analyzedTicks.length ? String(mostFrequent.digit) : "--", detail: mostFrequent && analyzedTicks.length ? `${mostFrequent.count} hits · ${percentage(mostFrequent.count, analyzedTicks.length)}` : "Waiting for ticks", color: COLORS.green },
+            { label: "Least Frequent", value: leastFrequent && analyzedTicks.length ? String(leastFrequent.digit) : "--", detail: leastFrequent && analyzedTicks.length ? `${leastFrequent.count} hits · ${percentage(leastFrequent.count, analyzedTicks.length)}` : "Waiting for ticks", color: COLORS.orange },
+            { label: "Even / Odd", value: analyzedTicks.length ? `${percentage(evenCount, analyzedTicks.length)} / ${percentage(oddCount, analyzedTicks.length)}` : "--", detail: "Even share / odd share", color: COLORS.blue },
+            { label: "High / Low", value: analyzedTicks.length ? `${percentage(highCount, analyzedTicks.length)} / ${percentage(lowCount, analyzedTicks.length)}` : "--", detail: "High 5–9 / low 0–4", color: COLORS.text },
+            { label: "Current Streak", value: currentDigit === null ? "--" : `${currentStreak} ${currentParity}`, detail: "Consecutive parity results", color: currentParity === "Even" ? COLORS.green : COLORS.red },
+          ].map((item) => (
+            <div key={item.label} style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: 16, minWidth: 0 }}>
+              <div style={{ color: COLORS.muted, fontSize: 12, fontWeight: 700 }}>{item.label}</div>
+              <div style={{ color: item.color, fontSize: 23, fontWeight: 900, marginTop: 9, overflowWrap: "anywhere", fontVariantNumeric: "tabular-nums" }}>{item.value}</div>
+              <div style={{ color: COLORS.muted, fontSize: 11, marginTop: 7 }}>{item.detail}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "minmax(0, 1.4fr) minmax(280px, 1fr)", gap: 16 }}>
+          <Panel title="Live Digit Distribution (0–9)">
+            <p style={{ color: COLORS.muted, fontSize: 12, margin: "0 0 18px" }}>Frequency of each last digit in the selected rolling sample. Percentages are descriptive, not forecasts.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(10, minmax(0, 1fr))", gap: 7, alignItems: "end" }}>
+              {digitCounts.map((count, digit) => {
+                const pct = analyzedTicks.length ? (count / analyzedTicks.length) * 100 : 0;
+                const color = digitColors[digit] ?? COLORS.blue;
+                return (
+                  <div key={digit} style={{ minWidth: 0, textAlign: "center" }}>
+                    <div style={{ color: COLORS.text, fontSize: 10, marginBottom: 5 }}>{pct.toFixed(1)}%</div>
+                    <div style={{ height: 110, display: "flex", alignItems: "flex-end", background: COLORS.background, borderRadius: 7, overflow: "hidden", border: `1px solid ${COLORS.border}` }}>
+                      <div title={`Digit ${digit}: ${count} hits (${pct.toFixed(2)}%)`} style={{ width: "100%", height: `${Math.max(count > 0 ? 3 : 0, analyzedTicks.length ? (count / Math.max(1, ...digitCounts)) * 100 : 0)}%`, background: color, borderRadius: "5px 5px 0 0", transition: "height 180ms ease" }} />
+                    </div>
+                    <div style={{ color, fontSize: 15, fontWeight: 900, marginTop: 7 }}>{digit}</div>
+                    <div style={{ color: COLORS.muted, fontSize: 10, marginTop: 3 }}>{count}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </Panel>
+          <Panel title="Digit Pair Heatmap">
+            <p style={{ color: COLORS.muted, fontSize: 12, margin: "0 0 14px" }}>Counts consecutive digit pairs in the loaded sample. Hover a cell to see its count.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "18px repeat(10, minmax(0, 1fr))", gap: 3, alignItems: "center" }}>
+              <span />
+              {Array.from({ length: 10 }, (_, digit) => <span key={digit} style={{ color: COLORS.muted, fontSize: 9, textAlign: "center" }}>{digit}</span>)}
+              {pairCounts.map((row, from) => (
+                <React.Fragment key={from}>
+                  <span style={{ color: COLORS.muted, fontSize: 10, textAlign: "center" }}>{from}</span>
+                  {row.map((count, to) => {
+                    const intensity = count / maxPairCount;
+                    return <div key={to} title={`${from} → ${to}: ${count} occurrences`} style={{ aspectRatio: "1", minWidth: 0, borderRadius: 3, background: count ? `rgba(34, 197, 94, ${0.12 + intensity * 0.78})` : COLORS.background, border: `1px solid ${COLORS.border}` }} />;
+                  })}
+                </React.Fragment>
+              ))}
+            </div>
+            <div style={{ color: COLORS.muted, fontSize: 11, marginTop: 12 }}>Rows = previous digit · columns = next digit</div>
           </Panel>
         </div>
 
