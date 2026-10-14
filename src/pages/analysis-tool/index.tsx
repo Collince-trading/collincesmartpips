@@ -26,16 +26,18 @@ const MARKETS = [
 const SAMPLE_SIZES = [50, 100, 500, 950, 1000, 2000, 5000];
 
 const COLORS = {
-  background: "#0b0b0b",
-  panel: "#ffffff",
-  border: "#e2e8f0",
-  text: "#10233f",
-  muted: "#64748b",
-  green: "#10b981",
-  blue: "#3478f6",
-  orange: "#f59e0b",
-  red: "#ef4444",
-  black: "#6b7280",
+  background: "#07111f",
+  panel: "#101f33",
+  border: "#263c58",
+  text: "#edf5ff",
+  muted: "#a4b8d0",
+  green: "#25e0a3",
+  blue: "#42a5ff",
+  orange: "#ffbf47",
+  red: "#ff5575",
+  black: "#8796aa",
+  purple: "#b58cff",
+  cyan: "#38e8ef",
 };
 
 function getLastDigit(
@@ -71,8 +73,9 @@ function Panel({
   return (
     <section
       style={{
-        background: COLORS.panel,
+        background: `linear-gradient(145deg, ${COLORS.panel}, #132943)`,
         border: `1px solid ${COLORS.border}`,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
         borderRadius: 12,
         padding: 18,
         minWidth: 0,
@@ -108,7 +111,7 @@ function StatCard({
   return (
     <div
       style={{
-        background: "#f8fafc",
+        background: "linear-gradient(145deg, #172b45, #122238)",
         border: `1px solid ${COLORS.border}`,
         borderRadius: 10,
         padding: 14,
@@ -500,8 +503,8 @@ export default function AnalysisToolPage() {
   const maxPairCount = Math.max(1, ...pairCounts.flat());
 
   const controlStyle: React.CSSProperties = {
-    background: "#ffffff",
-    color: "#10233f",
+    background: "#14263d",
+    color: "#f3f8ff",
     border: `1px solid ${COLORS.border}`,
     borderRadius: 6,
     padding: "10px 12px",
@@ -524,8 +527,8 @@ export default function AnalysisToolPage() {
     border: `1px solid ${
       active ? COLORS.blue : COLORS.border
     }`,
-    background: active ? "#3478f6" : "#ffffff",
-    color: active ? "#ffffff" : "#10233f",
+    background: active ? "linear-gradient(135deg, #2979ff, #8a5cff)" : "#14263d",
+    color: "#f3f8ff",
     cursor: "pointer",
     fontWeight: 600,
     fontSize: 13,
@@ -762,8 +765,8 @@ export default function AnalysisToolPage() {
                 marginTop: 16,
                 padding: 12,
                 borderRadius: 8,
-                background: "#3b151b",
-                color: "#fecaca",
+                background: "#3a1727",
+                color: "#ffb7c6",
                 fontSize: 13,
                 overflowWrap: "anywhere",
               }}
@@ -884,7 +887,7 @@ export default function AnalysisToolPage() {
                     <div key={`${tick.epoch}-${index}`} title={`Quote: ${formatQuote(tick.quote, decimalPlaces)} · ${new Date(tick.epoch * 1000).toLocaleTimeString()}`} style={{
                       width: 42, height: 42, borderRadius: "50%", display: "flex",
                       alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      border: `1px solid ${color}`, background: "#ffffff",
+                      border: `1px solid ${color}`, background: "#14263d",
                       color, fontSize: 18, fontWeight: 900, fontVariantNumeric: "tabular-nums",
                     }}>
                       {tick.digit}
@@ -927,7 +930,7 @@ export default function AnalysisToolPage() {
                 return (
                   <div key={digit} style={{ minWidth: 0, textAlign: "center" }}>
                     <div style={{ color: COLORS.text, fontSize: 10, marginBottom: 5 }}>{pct.toFixed(1)}%</div>
-                    <div style={{ height: 110, display: "flex", alignItems: "flex-end", background: "#f1f5f9", borderRadius: 7, overflow: "hidden", border: `1px solid ${COLORS.border}` }}>
+                    <div style={{ height: 110, display: "flex", alignItems: "flex-end", background: "#0a1728", borderRadius: 7, overflow: "hidden", border: `1px solid ${COLORS.border}` }}>
                       <div title={`Digit ${digit}: ${count} hits (${pct.toFixed(2)}%)`} style={{ width: "100%", height: `${Math.max(count > 0 ? 3 : 0, analyzedTicks.length ? (count / Math.max(1, ...digitCounts)) * 100 : 0)}%`, background: color, borderRadius: "5px 5px 0 0", transition: "height 180ms ease" }} />
                     </div>
                     <div style={{ color, fontSize: 15, fontWeight: 900, marginTop: 7 }}>{digit}</div>
