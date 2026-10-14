@@ -788,6 +788,38 @@ export default function AnalysisToolPage() {
           </Panel>
         </div>
 
+        {/* Live last-digit tape: newest tick appears on the right. */}
+        <div style={{ marginTop: 18 }}>
+          <Panel title="Live Last Digits">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+              <span style={{ color: COLORS.muted, fontSize: 13 }}>Most recent {Math.min(30, analyzedTicks.length)} ticks · newest on the right</span>
+              <span style={{ color: connected ? COLORS.green : COLORS.red, fontSize: 12, fontWeight: 800 }}>{connected ? "LIVE" : "OFFLINE"}</span>
+            </div>
+            {recentSequence.length === 0 ? (
+              <p style={{ color: COLORS.muted, fontSize: 13, margin: 0 }}>Waiting for market ticks…</p>
+            ) : (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {recentSequence.map((tick, index) => {
+                  const color = digitColors[tick.digit] ?? COLORS.text;
+                  return (
+                    <div key={`${tick.epoch}-${index}`} title={`Quote: ${formatQuote(tick.quote, decimalPlaces)} · ${new Date(tick.epoch * 1000).toLocaleTimeString()}`} style={{
+                      width: 42, height: 42, borderRadius: "50%", display: "flex",
+                      alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      border: `1px solid ${color}`, background: COLORS.background,
+                      color, fontSize: 18, fontWeight: 900, fontVariantNumeric: "tabular-nums",
+                    }}>
+                      {tick.digit}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <p style={{ color: COLORS.muted, fontSize: 12, lineHeight: 1.5, margin: "14px 0 0" }}>
+              Colors identify frequency rank within the selected sample, not a prediction of the next digit.
+            </p>
+          </Panel>
+        </div>
+
         {/* Analysis tabs */}
         <div
           style={{
