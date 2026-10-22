@@ -94,7 +94,7 @@ function onMessage(event){
  const rid=m.req_id;
  if(rid!==undefined&&pending.has(rid)){
   const p=pending.get(rid);pending.delete(rid);clearTimeout(p.timer);
-  if(m.error)p.reject(new Error((m.error.code||'DerivError')+': '+m.error.message));else p.resolve(m);
+  if(m.error){const err=new Error((m.error.code||'DerivError')+': '+m.error.message);err.isDerivError=true;p.reject(err);}else p.resolve(m);
  }
  let handler=(rid!==undefined?subByReq.get(rid):null);
  if(!handler&&m.subscription&&m.subscription.id)handler=subById.get(m.subscription.id);
@@ -125,7 +125,7 @@ function connect(token){
     $('account').textContent=a.loginid+(a.is_virtual?' · DEMO':' · REAL');
     $('balance').textContent=fmt(a.balance||0)+' '+accountCurrency;
     settledConnect=true;clearTimeout(timer);setStatus('Authorized',true);
-    request({balance:1,subscribe:1},10000).then(()=>{}).catch(()=>{});
+    request({balance:1},10000).catch(()=>{});
     pingTimer=setInterval(()=>{request({ping:1},5000).catch(()=>{});},25000);
     resolve(a);
    }catch(e){settledConnect=true;clearTimeout(timer);reject(e);try{ws.close();}catch(x){}}
@@ -217,18 +217,19 @@ async function runRound(config,round){
    const b=reply.buy;
    if(!b||!Number.isSafeInteger(Number(b.contract_id))||Number(b.contract_id)<=0){leg.status='buy unconfirmed';leg.error='No valid contract ID returned; purchase state unknown.';uncertain++;addRow(round,leg.index+1,leg.digit,leg.stake,leg.status,'—',null,leg.error);return {ok:false,unknown:true,leg};}
    leg.contractId=Number(b.contract_id);leg.status='purchased';purchased++;addRow(round,leg.index+1,leg.digit,leg.stake,leg.status,leg.contractId,null,'Purchase confirmed by Deriv');return {ok:true,leg};
-  }catch(e){leg.status='buy unconfirmed';leg.error=e.message+' Check Deriv statement; do not retry automatically.';uncertain++;addRow(round,leg.index+1,leg.digit,leg.stake,leg.status,'—',null,leg.error);return {ok:false,unknown:true,leg};}
+  }catch(e){if(e.isDerivError){leg.status='buy rejected';leg.error=e.message;addRow(round,leg.index+1,leg.digit,leg.stake,leg.status,'—',null,'Deriv explicitly rejected this buy');return {ok:false,unknown:false,leg};}leg.status='buy unconfirmed';leg.error=e.message+' Check Deriv statement; do not retry automatically.';uncertain++;addRow(round,leg.index+1,leg.digit,leg.stake,leg.status,'—',null,leg.error);return {ok:false,unknown:true,leg};}
  }));
  updateStats();
- const unknown=buyResults.filter(r=>!r.ok);
+ const unknown=buyResults.filter(r=>r.unknown);const rejected=buyResults.filter(r=>!r.ok&&!r.unknown);
  if(unknown.length)say(unknown.length+' buy(s) are unconfirmed. No automatic retry will occur; verify them in Deriv. Confirmed contracts will still be monitored.',true);
+ else if(rejected.length)say(rejected.length+' buy(s) were explicitly rejected by Deriv. Confirmed contracts will still be monitored; no further rounds will start.',true);
  const confirmed=buyResults.filter(r=>r.ok).map(r=>r.leg);
  const results=await Promise.all(confirmed.map(async leg=>{
   try{await waitSettlement(leg,round,config);return {ok:true,leg};}
   catch(e){leg.status='unsettled';leg.error=e.message;addRow(round,leg.index+1,leg.digit,leg.stake,leg.status,leg.contractId,null,e.message);say('A confirmed contract could not be fully tracked: '+e.message,true);stopRequested=true;return {ok:false,leg};}
  }));
  roundsDone++;updateStats();
- return {aborted:false,legs,unknown:unknown.length,settlementFailures:results.filter(r=>!r.ok).length};
+ return {aborted:false,legs,unknown:unknown.length,buyFailures:rejected.length,settlementFailures:results.filter(r=>!r.ok).length};
 }
 async function start(){
  if(running)return;
@@ -243,7 +244,7 @@ async function start(){
    if(sessionPnl<=-config.sl){say('Stop loss reached. No further rounds will start.',true);break;}
    if(sessionPnl-config.total < -config.sl){say('Stopped before the next round because another full batch could exceed the stop loss.',true);break;}
    const report=await runRound(config,r);
-   if(report.aborted||report.unknown||report.settlementFailures)break;
+   if(report.aborted||report.unknown||report.buyFailures||report.settlementFailures)break;
    if(sessionPnl>=config.tp){say('Take profit reached at '+fmt(sessionPnl)+' '+accountCurrency+'. Bot stopped.');break;}
    if(sessionPnl<=-config.sl){say('Stop loss reached at '+fmt(sessionPnl)+' '+accountCurrency+'. Bot stopped.',true);break;}
    if(stopRequested)break;
