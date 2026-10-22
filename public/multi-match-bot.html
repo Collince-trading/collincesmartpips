@@ -143,7 +143,7 @@ function validate(){
  if(!Number.isInteger(rounds)||rounds<1||rounds>100)throw new Error('Maximum rounds must be a whole number from 1 to 100.');
  if(!(tp>0&&Number.isFinite(tp))||!(sl>=0.35&&Number.isFinite(sl)))throw new Error('Take profit must be above 0 and stop loss at least 0.35.');
  if(digits.some(d=>!Number.isInteger(d)||d<0||d>9)||new Set(digits).size!==4)throw new Error('Enter four different whole-number digits from 0 to 9.');
- if(stakes.some(s=>!Number.isFinite(s)||s<0.35||Math.round(s*100)!==s*100))throw new Error('Each stake must be at least 0.35 with no more than two decimal places.');
+ if(stakes.some(s=>!Number.isFinite(s)||s<0.35||Math.abs(Math.round(s*100)-s*100)>1e-8))throw new Error('Each stake must be at least 0.35 with no more than two decimal places.');
  const total=stakes.reduce((a,b)=>a+b,0);
  if(total>sl)throw new Error('Combined stake ('+fmt(total)+') must not exceed the overall stop loss ('+fmt(sl)+').');
  return {market,type,duration,tp,sl,rounds,digits,stakes,total};
@@ -196,19 +196,20 @@ async function runRound(config,round){
  const legs=config.digits.map((digit,index)=>({index,digit,stake:config.stakes[index],status:'proposal pending',contractId:null,profit:null}));
  const t0=performance.now();
  const proposalResults=await Promise.all(legs.map(async leg=>{
-  leg.status='requesting proposal';
+  leg.status='requesting proposal';const requestStarted=performance.now();
   try{
    const reply=await request({proposal:1,amount:leg.stake,basis:'stake',contract_type:config.type,currency:accountCurrency,duration:config.duration,duration_unit:'t',symbol:config.market,barrier:String(leg.digit)},10000);
    const p=reply.proposal;if(!p||!p.id)throw new Error('Deriv response did not contain a proposal ID.');
    const ask=Number(p.ask_price);
    if(!Number.isFinite(ask)||Math.abs(ask-leg.stake)>0.01)throw new Error('Proposal price did not match the requested stake.');
-   leg.proposalId=p.id;leg.askPrice=ask;leg.status='proposal ready';addRow(round,leg.index+1,leg.digit,leg.stake,leg.status,'—',null,'Proposal ready');return {ok:true,leg};
-  }catch(e){leg.status='proposal failed';leg.error=e.message;addRow(round,leg.index+1,leg.digit,leg.stake,leg.status,'—',null,e.message);return {ok:false,leg};}
+   leg.proposalId=p.id;leg.askPrice=ask;leg.status='proposal ready';addRow(round,leg.index+1,leg.digit,leg.stake,leg.status,'—',null,'Proposal ready');return {ok:true,leg,rttMs:performance.now()-requestStarted};
+  }catch(e){leg.status='proposal failed';leg.error=e.message;addRow(round,leg.index+1,leg.digit,leg.stake,leg.status,'—',null,e.message);return {ok:false,leg,rttMs:performance.now()-requestStarted};}
  }));
  const proposalMs=performance.now()-t0;
+ const sequentialEquivalent=proposalResults.reduce((sum,r)=>sum+r.rttMs,0);
  const failed=proposalResults.filter(r=>!r.ok);
  if(failed.length){say('Round '+round+' aborted before any buy because '+failed.length+' proposal(s) failed. No contracts were bought in this round.',true);return {aborted:true,legs};}
- say('All four proposals ready ('+proposalMs.toFixed(0)+' ms). Buying all four concurrently…');
+ say('All four proposals ready. Concurrent batch: '+proposalMs.toFixed(0)+' ms; sum of individual response times: '+sequentialEquivalent.toFixed(0)+' ms. Buying all four concurrently…');
  const buyResults=await Promise.all(legs.map(async leg=>{
   leg.status='buy pending';
   try{
