@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SmartPips Free Bot — Deriv Even/Odd</title>
+<style>
+:root{--bg:#0d1420;--pn:#141d2c;--ln:#25324a;--tx:#e2e8f0;--mu:#8190a8;--te:#3fb8af;--co:#ff6b5b;--am:#f2b84b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 "Segoe UI",system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--ln)}
+h1{font-size:17px;margin:0 auto 0 0}
+main{padding:16px;max-width:1100px;margin:auto}
+.g{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.c{background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:14px}
+.c h3{margin:0 0 10px;font-size:14px}
+label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+input,select,button{background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:6px;padding:6px 8px;font:inherit}
+input,select{width:150px}
+button{cursor:pointer}button:hover:not(:disabled){border-color:var(--te)}
+button:disabled{opacity:.4;cursor:not-allowed}
+#go{background:var(--te);color:#06201e;border:0;font-weight:600;padding:8px 18px}
+#stop{background:var(--co);color:#2a0905;border:0;font-weight:600;padding:8px 18px}
+.mu{color:var(--mu);font-size:12px}.te{color:var(--te)}.co{color:var(--co)}.am{color:var(--am)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stats div{background:var(--bg);border-radius:6px;padding:8px}
+.stats b{display:block;font-size:19px}
+#msg{padding:8px 12px;border-radius:6px;margin-bottom:12px;background:var(--pn);border:1px solid var(--ln)}
+.warn{border-color:var(--am)!important;color:var(--am)}
+table{border-collapse:collapse;width:100%;font-size:13px}td,th{padding:4px 8px;border-bottom:1px solid var(--ln);text-align:left}
+#lg{max-height:340px;overflow:auto}
+.pill{padding:2px 10px;border-radius:12px;font-size:12px;background:#3a2226;color:var(--co)}
+.pill.on{background:#12302f;color:var(--te)}
+footer{padding:16px;color:var(--mu);font-size:12px;max-width:1100px;margin:auto}
+</style></head><body>
+<header>
+<h1>SmartPips Free Bot · Deriv Even/Odd</h1>
+<a href="/multi-match-bot.html" style="color:var(--te);text-decoration:none;font-weight:600">Multi-Digit Matches Bot →</a>
+<span class="pill" id="conn">Not connected</span>
+<span id="acct" class="mu"></span>
+</header>
+<main>
+<div id="msg" class="warn">Use a <b>demo account token</b> first. This bot places real trades with the account the token belongs to. Martingale recovery can reach your stop loss quickly, and no strategy has a statistical edge on Deriv's random digits.</div>
+<div class="g">
+<div class="c"><h3>Settings</h3>
+<label>API token (Read + Trade)<input id="tok" type="password" placeholder="paste token" autocomplete="off"></label>
+<label>Market<select id="sym"><option value="R_10">Volatility 10</option><option value="R_25">Volatility 25</option><option value="R_50">Volatility 50</option><option value="R_75">Volatility 75</option><option value="R_100" selected>Volatility 100</option><option value="1HZ10V">Volatility 10 (1s)</option><option value="1HZ25V">Volatility 25 (1s)</option><option value="1HZ50V">Volatility 50 (1s)</option><option value="1HZ75V">Volatility 75 (1s)</option><option value="1HZ100V">Volatility 100 (1s)</option></select></label>
+<label>Starting side<select id="side"><option value="DIGITEVEN">Even</option><option value="DIGITODD">Odd</option></select></label>
+<label>Base stake<input id="base" type="number" value="0.5" step="0.05" min="0.35"></label>
+<label>Martingale value<input id="mart" type="number" value="1.15" step="0.01" min="1"></label>
+<label>Recovery mode<select id="mode"><option value="total">Total-loss recovery</option><option value="classic">Previous stake × value</option></select></label>
+<label>Switch side after N losses in a row<input id="swn" type="number" value="2" min="1"></label>
+<label>Take profit<input id="tp" type="number" value="20"></label>
+<label>Stop loss<input id="sl" type="number" value="15"></label>
+<label>Max stake (0 = none)<input id="mx" type="number" value="0" min="0" step="0.5"></label>
+<div style="display:flex;gap:10px;margin-top:12px"><button id="go" onclick="start()">Start bot</button><button id="stop" onclick="halt('Stopped by you.')" disabled>Stop</button></div>
+<p class="mu">Total-loss recovery: after a loss, the next stake = total unrecovered loss × martingale value ÷ payout rate, so one win recovers all losses plus a margin. The stake is capped to reduce the chance of exceeding your stop loss; safeguards are not guarantees. The token stays in this page's memory only and is never saved.</p>
+</div>
+<div class="c"><h3>Live session</h3>
+<div class="stats">
+<div><span class="mu">Session P/L</span><b id="pnl">0.00</b></div>
+<div><span class="mu">Balance</span><b id="bal">–</b></div>
+<div><span class="mu">Next trade</span><b id="nxt">–</b></div>
+<div><span class="mu">Next stake</span><b id="nst">–</b></div>
+<div><span class="mu">Losses in a row</span><b id="cl">0</b></div>
+<div><span class="mu">Unrecovered loss</span><b id="ul">0.00</b></div>
+<div><span class="mu">Wins / losses</span><b id="wl">0 / 0</b></div>
+<div><span class="mu">Win rate</span><b id="wr">–</b></div>
+</div></div>
+</div>
+<div class="c" style="margin-top:12px"><h3>Trade log</h3><div id="lg"><table><thead><tr><th>#</th><th>Side</th><th>Stake</th><th>Result</th><th>P/L</th><th>Session</th></tr></thead><tbody id="rows"></tbody></table></div></div>
+</main>
+<footer>Disclaimer: Deriv synthetic indices are random. Every even/odd trade has a negative expected value after the broker's margin, and martingale only changes how losses are distributed: many small wins, occasionally a large loss. Trade only what you can afford to lose. Not financial advice.</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let ws,ping,wd,running=false,busy=false,authed=false,wantStart=false,virt=true,cur='USD';
+let S={};
+const num=id=>parseFloat($(id).value);
+const r2=v=>Math.round(v*100)/100;
+const setMsg=(t,w)=>{$('msg').textContent=t;$('msg').className=w?'warn':''};
+function connect(){
+ ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+ ws.onopen=()=>{$('conn').textContent='Connected';$('conn').className='pill on';
+  ws.send(JSON.stringify({authorize:$('tok').value.trim()}));
+  ping=setInterval(()=>send({ping:1}),30000)};
+ ws.onclose=()=>{clearInterval(ping);authed=false;$('conn').textContent='Not connected';$('conn').className='pill';
+  if(running)halt('Connection lost. The bot stopped. Check your Deriv statement for any open trade before restarting.',true)};
+ ws.onerror=()=>setMsg('Connection error. Check your internet and try again.',true);
+ ws.onmessage=e=>onMsg(JSON.parse(e.data));
+}
+const send=o=>{if(ws&&ws.readyState==1)ws.send(JSON.stringify(o))};
+function onMsg(m){
+ if(m.error){
+  if(m.msg_type=='authorize'){setMsg('Authorization failed: '+m.error.message,true);wantStart=false;ws.close();return}
+  if(running)halt('Deriv rejected the request: '+m.error.message,true);return}
+ switch(m.msg_type){
+  case 'authorize':{const a=m.authorize;authed=true;virt=!!a.is_virtual;cur=a.currency;
+   $('acct').textContent=a.loginid+(virt?' (demo)':' (REAL)');$('bal').textContent=f(a.balance)+' '+cur;
+   send({balance:1,subscribe:1});
+   if(wantStart){wantStart=false;
+    if(!virt&&!confirm('This is a REAL money account ('+a.loginid+'). The bot will place live trades. Continue?')){ws.close();return}
+    begin()}break}
+  case 'balance':$('bal').textContent=f(m.balance.balance)+' '+m.balance.currency;break;
+  case 'proposal':{
+   if(running&&busy&&S.waitingProposal&&m.proposal){
+    S.waitingProposal=false;
+    const ask=Number(m.proposal.ask_price),payout=Number(m.proposal.payout);
+    if(ask>0&&payout>ask)S.ratio=Math.max(.01,payout/ask-1);
+    send({buy:m.proposal.id,price:S.stake});
+   }break}
+  case 'buy':{
+   const b=m.buy;S.cid=b.contract_id;
+   if(!S.cid){halt('Deriv did not return a contract ID. The bot stopped.',true);break}
+   send({proposal_open_contract:1,contract_id:S.cid,subscribe:1});break}
+  case 'proposal_open_contract':{const c=m.proposal_open_contract;
+   if(c&&String(c.contract_id)===String(S.cid)&&c.is_sold&&!S.settled){S.settled=true;settle(+c.profit)}break}
+ }}
+function start(){
+ if(!$('tok').value.trim()){setMsg('Paste an API token first (create one at app.deriv.com/account/api-token with Read and Trade scopes).',true);return}
+ const base=num('base');
+ if(!(base>=.35)){setMsg('Base stake must be at least 0.35.',true);return}
+ if(!(num('mart')>=1)||!(num('tp')>0)||!(num('sl')>0)||!(num('swn')>=1)){setMsg('Check martingale (≥1), take profit, stop loss and switch count.',true);return}
+ $('go').disabled=true;$('tok').disabled=true;setMsg('Connecting…');wantStart=true;
+ if(ws&&ws.readyState==1&&authed){wantStart=false;begin()}else connect();
+}
+function begin(){
+ S={side:$('side').value,consec:0,L:0,prev:num('base'),ratio:.95,pnl:0,w:0,l:0,n:0,cid:null,settled:true,stake:0};
+ running=true;busy=false;$('rows').innerHTML='';$('stop').disabled=false;$('go').disabled=true;
+ setMsg('Bot running on '+$('sym').selectedOptions[0].text+'.');ui();trade()}
+function calcStake(){
+ const base=num('base'),m=num('mart');let s;
+ if(S.L<=0)s=base;
+ else if($('mode').value=='total')s=Math.max(base,S.L*m/S.ratio);
+ else s=Math.max(base,S.prev*m);
+ const mx=num('mx');if(mx>0)s=Math.min(s,mx);
+ s=r2(s);
+ const room=num('sl')+S.pnl;
+ if(s>room)s=Math.floor(room*100)/100;
+ return s>=.35?s:0}
+function trade(){
+ if(!running||busy)return;
+ const stake=calcStake();
+ if(!stake){halt('Stop loss protection: the remaining loss room is below the minimum stake of 0.35.',true);return}
+ S.stake=stake;S.settled=false;S.cid=null;S.waitingProposal=true;busy=true;ui();
+ send({proposal:1,amount:stake,basis:'stake',contract_type:S.side,currency:cur,duration:1,duration_unit:'t',symbol:$('sym').value});
+ clearTimeout(wd);wd=setTimeout(()=>{if(busy&&running)halt('No trade response received within 30 seconds. Bot stopped. Check your Deriv statement before restarting.',true)},30000)}
+function settle(profit){
+ clearTimeout(wd);busy=false;S.n++;S.pnl=r2(S.pnl+profit);
+ const win=profit>0,side=S.side;
+ if(win){S.w++;S.consec=0;S.L=$('mode').value=='total'?Math.max(0,r2(S.L-profit)):0}
+ else{S.l++;S.consec++;S.L=r2(S.L-profit)}
+ S.prev=S.stake;
+ log(side,S.stake,win,profit);
+ if(!win&&S.consec>=num('swn')){S.side=S.side=='DIGITEVEN'?'DIGITODD':'DIGITEVEN';S.consec=0}
+ ui();
+ if(S.pnl>=num('tp')){halt('Take profit reached: +'+f(S.pnl)+' '+cur+'. Bot stopped.');return}
+ if(S.pnl<=-num('sl')){halt('Stop loss reached: '+f(S.pnl)+' '+cur+'. Bot stopped.',true);return}
+ setTimeout(trade,400)}
+function halt(t,w){running=false;busy=false;clearTimeout(wd);wantStart=false;
+ $('go').disabled=false;$('stop').disabled=true;$('tok').disabled=false;setMsg(t,w);
+ if(ws&&ws.readyState==1)ws.close();ui()}
+const f=v=>(+v).toFixed(2);
+const nm=s=>s=='DIGITEVEN'?'Even':'Odd';
+function log(side,stake,win,p){
+ const tr=document.createElement('tr');
+ tr.innerHTML=`<td>${S.n}</td><td>${nm(side)}</td><td>${f(stake)}</td><td class="${win?'te':'co'}">${win?'Win':'Loss'}</td><td class="${p>=0?'te':'co'}">${p>=0?'+':''}${f(p)}</td><td class="${S.pnl>=0?'te':'co'}">${S.pnl>=0?'+':''}${f(S.pnl)}</td>`;
+ $('rows').prepend(tr);while($('rows').children.length>300)$('rows').lastChild.remove()}
+function ui(){if(!S.side)return;
+ $('pnl').textContent=(S.pnl>=0?'+':'')+f(S.pnl);$('pnl').className=S.pnl>=0?'te':'co';
+ $('nxt').textContent=nm(S.side);$('nst').textContent=running?f(calcStake()||0):'–';
+ $('cl').textContent=S.consec;$('ul').textContent=f(Math.max(0,S.L));
+ $('wl').textContent=S.w+' / '+S.l;$('wr').textContent=S.n?(100*S.w/S.n).toFixed(1)+'%':'–'}
+</script></body></html>
