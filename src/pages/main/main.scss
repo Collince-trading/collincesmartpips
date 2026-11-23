@@ -825,3 +825,48 @@
 @media (prefers-reduced-motion: reduce) {
     .smartpips-tab-icon, .smartpips-coming-soon__icon { transition: none; animation: none; }
 }
+
+/* Screenshot-inspired SmartPips navigation strip */
+.main__container .dc-tabs__list--top {
+    background: #071a2b;
+    border-bottom: 1px solid #102b43;
+}
+.main__container .dc-tabs__item {
+    color: #f4f8fc;
+    background: transparent;
+    transition: background-color 180ms ease, color 180ms ease;
+}
+.main__container .dc-tabs__item:hover {
+    background: #102b43;
+    color: #ffffff;
+}
+.main__container .dc-tabs__item.dc-tabs__active {
+    background: #164d83;
+    color: #ffffff;
+}
+.smartpips-tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    margin-inline-end: 0.8rem;
+    vertical-align: middle;
+    transition: transform 180ms ease, filter 180ms ease;
+}
+.smartpips-tab-icon img {
+    width: 2.4rem;
+    height: 2.4rem;
+    object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(72%) sepia(61%) saturate(1794%) hue-rotate(153deg) brightness(100%) contrast(102%);
+}
+.dc-tabs__item:hover .smartpips-tab-icon {
+    transform: translateY(-1px) scale(1.08);
+    filter: drop-shadow(0 0 5px rgba(53, 199, 244, 0.4));
+}
+.dc-tabs__item.dc-tabs__active .smartpips-tab-icon {
+    filter: drop-shadow(0 0 5px rgba(53, 199, 244, 0.28));
+}
+@media (prefers-reduced-motion: reduce) {
+    .smartpips-tab-icon { transition: none; }
+}
