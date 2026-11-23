@@ -870,3 +870,245 @@
 @media (prefers-reduced-motion: reduce) {
     .smartpips-tab-icon { transition: none; }
 }
+
+/* SmartPips digit bot marketplace inspired by the user's reference */
+.smartpips-bots-page {
+    box-sizing: border-box;
+    width: 100%;
+    max-height: calc(100vh - 15rem);
+    min-height: 34rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.8rem 1.6rem 2.4rem;
+    background: #f3f4f6;
+    color: #243b75;
+    scrollbar-width: thin;
+    scrollbar-color: #244eaa #e7e9ed;
+}
+.smartpips-bots-categories {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    overflow-x: auto;
+    padding: 0.4rem 0 1rem;
+    background: var(--general-main-1);
+    scrollbar-width: thin;
+}
+.smartpips-bots-category {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    flex: 0 0 auto;
+    min-width: 10.5rem;
+    min-height: 4.2rem;
+    padding: 0.8rem 1.6rem;
+    border: 1px solid #d7dce6;
+    border-radius: 0.5rem;
+    color: #284887;
+    background: #fff;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, background 160ms ease;
+}
+.smartpips-bots-category:hover {
+    transform: translateY(-1px);
+    border-color: #3475ff;
+    box-shadow: 0 3px 10px rgba(36, 75, 160, 0.12);
+}
+.smartpips-bots-category--active {
+    border: 2px solid #3475ff;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(52, 117, 255, 0.08);
+}
+.smartpips-bots-category__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #244da6;
+    font-size: 1.6rem;
+    transition: transform 200ms ease;
+}
+.smartpips-bots-category:hover .smartpips-bots-category__icon {
+    transform: scale(1.1) rotate(-4deg);
+}
+.smartpips-bots-library {
+    margin-top: 0.4rem;
+    padding: 1.6rem 2rem 2.4rem;
+    border-radius: 1.2rem;
+    background: #f3f4f6;
+}
+.smartpips-bots-search {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    padding: 0 0 1.8rem;
+    background: #f3f4f6;
+}
+.smartpips-bots-search input {
+    box-sizing: border-box;
+    width: min(42rem, 100%);
+    height: 4.4rem;
+    padding: 0 1.4rem;
+    border: 2px solid #2444a5;
+    border-radius: 1.1rem;
+    outline: none;
+    background: #fff;
+    color: #253c7c;
+    font-size: 1.35rem;
+}
+.smartpips-bots-search input:focus {
+    border-color: #3475ff;
+    box-shadow: 0 0 0 3px rgba(52, 117, 255, 0.12);
+}
+.smartpips-bots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2.4rem 2.2rem;
+    align-items: stretch;
+}
+.smartpips-bot-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 22rem;
+    padding: 2.4rem 1.6rem 1.5rem;
+    border: 2px solid #203e9e;
+    border-radius: 1.8rem;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(20, 42, 100, 0.14);
+    color: #284887;
+    overflow: hidden;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.smartpips-bot-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 9px 24px rgba(20, 42, 100, 0.18);
+}
+.smartpips-bot-card__premium {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 8.4rem;
+    height: 3rem;
+    padding: 0 1.2rem;
+    border-bottom-left-radius: 0.9rem;
+    background: #ffc400;
+    color: #111;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    box-shadow: 0 3px 8px rgba(255, 196, 0, 0.25);
+}
+.smartpips-bot-card__heading {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 3.2rem;
+    margin-top: 0.8rem;
+    padding-right: 7rem;
+}
+.smartpips-bot-card__robot {
+    flex: 0 0 auto;
+    font-size: 2.3rem;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+}
+.smartpips-bot-card__heading h3 {
+    margin: 0;
+    font-size: 1.55rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: #24438e;
+    overflow-wrap: anywhere;
+}
+.smartpips-bot-card__rating {
+    margin: 1.1rem 0 0.8rem;
+    text-align: center;
+    color: #ffc400;
+    font-size: 1.7rem;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+}
+.smartpips-bot-card__description {
+    flex: 1 1 auto;
+    margin: 0.5rem 0 1.4rem;
+    text-align: center;
+    color: #586477;
+    font-size: 1.2rem;
+    line-height: 1.55;
+}
+.smartpips-bot-card__load {
+    display: block;
+    width: 100%;
+    min-height: 3.6rem;
+    margin-top: auto;
+    border: 0;
+    border-radius: 1.2rem;
+    background: linear-gradient(100deg, #24449e, #3479f4);
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 9px rgba(38, 73, 157, 0.22);
+    transition: filter 160ms ease, transform 160ms ease;
+}
+.smartpips-bot-card__load:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+.smartpips-bots-selected {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 0 0 1.6rem;
+    padding: 1.2rem 1.6rem;
+    border: 1px solid #9ab6ef;
+    border-radius: 1rem;
+    background: #eaf1ff;
+    color: #24438e;
+    font-size: 1.25rem;
+}
+.smartpips-bots-selected button {
+    border: 0;
+    border-radius: 0.8rem;
+    padding: 0.8rem 1.2rem;
+    background: #2e67cc;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+.smartpips-bots-selected .smartpips-bots-selected__dismiss {
+    margin-left: auto;
+    padding: 0.4rem 1rem;
+    background: transparent;
+    color: #24438e;
+    font-size: 2rem;
+}
+.smartpips-bots-empty {
+    grid-column: 1 / -1;
+    padding: 3rem;
+    text-align: center;
+    color: #52617a;
+}
+@media (max-width: 1100px) {
+    .smartpips-bots-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem; }
+    .smartpips-bots-library { padding: 1.2rem; }
+}
+@media (max-width: 640px) {
+    .smartpips-bots-page { max-height: calc(100vh - 12rem); min-height: 24rem; padding: 0.6rem; }
+    .smartpips-bots-category { min-width: 9rem; padding: 0.8rem 1rem; }
+    .smartpips-bots-grid { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }
+    .smartpips-bot-card { min-height: 20rem; padding: 2rem 1.4rem 1.4rem; }
+    .smartpips-bot-card__heading h3 { font-size: 1.45rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .smartpips-bots-category, .smartpips-bots-category__icon, .smartpips-bot-card, .smartpips-bot-card__load { transition: none; }
+}
