@@ -14,17 +14,39 @@ export const tabs_title: TTabsTitle = Object.freeze({
 export const DBOT_TABS: TDashboardTabIndex = Object.freeze({
     DASHBOARD: 0,
     BOT_BUILDER: 1,
-    CHART: 2,
-    TUTORIAL: 3,
-    ANALYSIS_TOOL: 4,
-    FREE_BOTS: 5,
-    RISK_CALCULATOR: 6,
-    ACCOUNT_MANAGEMENT: 7,
-    TRADE_HISTORY: 8,
+    FREE_BOTS: 2,
+    BULK_TRADER: 3,
+    PRO_AI: 4,
+    DUAL_EDGE: 5,
+    ANALYSIS_TOOL: 6,
+    COPY_TRADING: 7,
+    CHART: 8,
+    RISK_CALCULATOR: 9,
+    MANUAL_TRADER: 10,
+    TRADINGVIEW: 11,
+    TUTORIAL: 12,
+    ACCOUNT_MANAGEMENT: 13,
+    TRADE_HISTORY: 14,
 });
 
 export const MAX_STRATEGIES = 10;
 
-export const TAB_IDS = ['id-dbot-dashboard', 'id-bot-builder', 'id-charts', 'id-tutorials', 'id-analysis-tool', 'id-free-bots', 'id-risk-calculator', 'id-account-management', 'id-trade-history'];
+export const TAB_IDS = [
+    'id-dbot-dashboard',
+    'id-bot-builder',
+    'id-free-bots',
+    'id-bulk-trader',
+    'id-pro-ai',
+    'id-dual-edge',
+    'id-analysis-tool',
+    'id-copy-trading',
+    'id-charts',
+    'id-risk-calculator',
+    'id-manual-trader',
+    'id-tradingview',
+    'id-tutorials',
+    'id-account-management',
+    'id-trade-history',
+];
 
 export const DEBOUNCE_INTERVAL_TIME = 500;
