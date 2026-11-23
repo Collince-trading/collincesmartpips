@@ -56,7 +56,7 @@ const DashboardComponent = observer(({ handleTabChange }: TMobileIconGuide) => {
     const openFeature = (next: FeatureKey) => setFeature(next);
     const featureTitle: Record<FeatureKey, string> = {
         home: 'SmartPips dashboard',
-        'free-bots': 'Free Bots',
+        'free-bots': 'Trading Bots — Free Digit Bots',
         'risk-calculator': 'Risk Calculator',
         account: 'Account Management',
         history: 'Trade History',
@@ -81,7 +81,7 @@ const DashboardComponent = observer(({ handleTabChange }: TMobileIconGuide) => {
                             )}
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(165px, 1fr))', gap: 10, marginTop: 14 }}>
-                            <button type='button' onClick={() => handleTabChange(4)} style={featureButtonStyle}>
+                            <button type='button' onClick={() => handleTabChange(6)} style={featureButtonStyle}>
                                 <strong>Digit Analysis</strong><div style={{ marginTop: 6, fontSize: 13, opacity: .8 }}>Live market digits and analysis tools</div>
                             </button>
                             <button type='button' onClick={() => openFeature('free-bots')} style={featureButtonStyle}>
@@ -109,12 +109,12 @@ const DashboardComponent = observer(({ handleTabChange }: TMobileIconGuide) => {
                                         {[
                                             { title: 'Even / Odd Practice', detail: 'Review last-digit parity in the Digit Analysis tab.', action: 'Open analysis' },
                                             { title: 'Matches / Differs Practice', detail: 'Study how often the latest digit matches a selected digit.', action: 'Open analysis' },
-                                            { title: 'Rise / Fall Practice', detail: 'Use the market chart to observe price movement before testing a strategy.', action: 'Open charts' },
+                                            { title: 'Over / Under Practice', detail: 'Study digit barriers and recent last-digit distribution before testing a rule.', action: 'Open analysis' },
                                         ].map(bot => (
                                             <div key={bot.title} style={{ border: '1px solid var(--border-normal, #d8dce3)', borderRadius: 10, padding: 14 }}>
                                                 <strong>{bot.title}</strong>
                                                 <p style={{ fontSize: 13, lineHeight: 1.5 }}>{bot.detail}</p>
-                                                <button type='button' onClick={() => handleTabChange(bot.title === 'Rise / Fall Practice' ? 2 : 4)}>{bot.action}</button>
+                                                <button type='button' onClick={() => handleTabChange(bot.title === 'Rise / Fall Practice' ? 8 : 6)}>{bot.action}</button>
                                             </div>
                                         ))}
                                     </div>
