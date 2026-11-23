@@ -85,7 +85,7 @@ const DashboardComponent = observer(({ handleTabChange }: TMobileIconGuide) => {
                                 <strong>Digit Analysis</strong><div style={{ marginTop: 6, fontSize: 13, opacity: .8 }}>Live market digits and analysis tools</div>
                             </button>
                             <button type='button' onClick={() => openFeature('free-bots')} style={featureButtonStyle}>
-                                <strong>Free Bots</strong><div style={{ marginTop: 6, fontSize: 13, opacity: .8 }}>Browse starter strategies</div>
+                                <strong>Trading Bots</strong><div style={{ marginTop: 6, fontSize: 13, opacity: .8 }}>Browse free digit starter strategies</div>
                             </button>
                             <button type='button' onClick={() => openFeature('risk-calculator')} style={featureButtonStyle}>
                                 <strong>Risk Calculator</strong><div style={{ marginTop: 6, fontSize: 13, opacity: .8 }}>Estimate exposure before trading</div>
@@ -114,7 +114,7 @@ const DashboardComponent = observer(({ handleTabChange }: TMobileIconGuide) => {
                                             <div key={bot.title} style={{ border: '1px solid var(--border-normal, #d8dce3)', borderRadius: 10, padding: 14 }}>
                                                 <strong>{bot.title}</strong>
                                                 <p style={{ fontSize: 13, lineHeight: 1.5 }}>{bot.detail}</p>
-                                                <button type='button' onClick={() => handleTabChange(bot.title === 'Rise / Fall Practice' ? 8 : 6)}>{bot.action}</button>
+                                                <button type='button' onClick={() => handleTabChange(6)}>{bot.action}</button>
                                             </div>
                                         ))}
                                     </div>
