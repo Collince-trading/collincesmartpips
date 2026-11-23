@@ -20,20 +20,24 @@ const WorkspaceWrapper = observer(() => {
     }, []);
 
     React.useEffect(() => {
-        const queued = takeSmartPipsBot();
-        const workspace = window.Blockly?.derivWorkspace;
-        if (!queued || !workspace || is_loading) return;
-        try {
-            const xmlDom = window.Blockly.utils.xml.textToDom(queued.xml);
-            window.Blockly.Xml.clearWorkspaceAndLoadFromXml(xmlDom, workspace);
-            workspace.cleanUp();
-            workspace.clearUndo();
-            workspace.strategy_to_load = queued.xml;
-            workspace.current_strategy_id = window.Blockly.utils.idGenerator.genUid();
-            workspace.options?.renderer?.refresh?.();
-        } catch (error) {
-            console.error('Unable to load SmartPips bot template:', error);
-        }
+        const interval = setInterval(() => {
+            const workspace = window.Blockly?.derivWorkspace;
+            if (!workspace || is_loading) return;
+            const queued = takeSmartPipsBot();
+            if (!queued) return;
+            clearInterval(interval);
+            try {
+                const xmlDom = window.Blockly.utils.xml.textToDom(queued.xml);
+                window.Blockly.Xml.clearWorkspaceAndLoadFromXml(xmlDom, workspace);
+                workspace.cleanUp();
+                workspace.clearUndo();
+                workspace.strategy_to_load = queued.xml;
+                workspace.current_strategy_id = window.Blockly.utils.idGenerator.genUid();
+            } catch (error) {
+                console.error('Unable to load SmartPips bot template:', error);
+            }
+        }, 250);
+        return () => clearInterval(interval);
     }, [is_loading]);
 
     if (is_loading) return null;
