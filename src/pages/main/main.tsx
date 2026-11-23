@@ -65,7 +65,7 @@ const SmartPipsFeatureTab = ({ feature, handleTabChange }: { feature: 'free-bots
         <p>Explore digit-contract starter strategies. These cards are learning pathways, not downloadable or executable bots yet.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
             <div style={card}><h3>Even / Odd</h3><p>Review last-digit parity and recent digit distribution.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div>
-            <div style={card}><h3>Matches / Differs</h3><p>Study selected-digit match rates before testing a strategy.</p><button onClick={() => handleTabChange(4)}>Open Digit Analysis</button></div>
+            <div style={card}><h3>Matches / Differs</h3><p>Study selected-digit match rates before testing a strategy.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div>
             <div style={card}><h3>Over / Under</h3><p>Review digit barriers and recent last-digit distribution.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div><div style={card}><h3>Digit Pattern</h3><p>Explore digit sequences and frequency before testing a rule.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div>
         </div>
         <p>Use a demo account first. No strategy guarantees profit.</p>
