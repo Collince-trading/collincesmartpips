@@ -61,12 +61,12 @@ const SmartPipsFeatureTab = ({ feature, handleTabChange }: { feature: 'free-bots
     const panel: React.CSSProperties = { maxWidth: 1100, margin: '24px auto', padding: 24, color: 'var(--text-general)', border: '1px solid var(--border-normal)', borderRadius: 14 };
     const card: React.CSSProperties = { padding: 18, border: '1px solid var(--border-normal)', borderRadius: 12, background: 'var(--general-section-1)' };
     if (feature === 'free-bots') return <section style={panel}>
-        <h2>Free Bots</h2>
-        <p>Explore these starter strategy pathways. These are learning shortcuts, not automated bots; they will not place trades on their own.</p>
+        <h2>Trading Bots — Free Digit Bots</h2>
+        <p>Explore digit-contract starter strategies. These cards are learning pathways, not downloadable or executable bots yet.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-            <div style={card}><h3>Even / Odd</h3><p>Review last-digit parity and recent digit distribution.</p><button onClick={() => handleTabChange(4)}>Open Digit Analysis</button></div>
+            <div style={card}><h3>Even / Odd</h3><p>Review last-digit parity and recent digit distribution.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div>
             <div style={card}><h3>Matches / Differs</h3><p>Study selected-digit match rates before testing a strategy.</p><button onClick={() => handleTabChange(4)}>Open Digit Analysis</button></div>
-            <div style={card}><h3>Rise / Fall</h3><p>Observe price movement on charts before building a bot.</p><button onClick={() => handleTabChange(2)}>Open Charts</button></div>
+            <div style={card}><h3>Over / Under</h3><p>Review digit barriers and recent last-digit distribution.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div><div style={card}><h3>Digit Pattern</h3><p>Explore digit sequences and frequency before testing a rule.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div>
         </div>
         <p>Use a demo account first. No strategy guarantees profit.</p>
     </section>;
@@ -87,6 +87,24 @@ const SmartPipsFeatureTab = ({ feature, handleTabChange }: { feature: 'free-bots
     return <section style={panel}><h2>Trade History</h2>
         <p>Your dedicated history tab is ready as the place for your real records, but it is not yet connected to Deriv transaction/statement data.</p>
         <p>No sample trades are shown as real. The next integration step is to request authorized transaction history from Deriv and display the returned records, timestamps, contract details, and profit/loss.</p>
+    </section>;
+};
+
+const SmartPipsComingSoonTab = ({ feature }: { feature: 'bulk-trader' | 'pro-ai' | 'dual-edge' | 'copy-trading' | 'manual-trader' | 'tradingview' }) => {
+    const content = {
+        'bulk-trader': { title: 'Bulk Trader', icon: '📦', description: 'A digit-focused workspace for preparing and managing multiple trade setups. This tool is not active yet.' },
+        'pro-ai': { title: 'Pro AI', icon: '✨', description: 'An AI-assisted digit strategy workspace planned for analysis, rule explanations, and strategy review. It is not active yet.' },
+        'dual-edge': { title: 'Dual Edge', icon: '🔁', description: 'A planned SmartPips digit-strategy workspace for comparing two digit-based approaches. It is not active yet.' },
+        'copy-trading': { title: 'Copy Trading', icon: '📋', description: 'A planned area for following digit-trading strategies. Copying trades involves risk and this feature is not active yet.' },
+        'manual-trader': { title: 'Manual Trader', icon: '🖐️', description: 'A planned manual digit-contract trading workspace. It is not active yet.' },
+        'tradingview': { title: 'TradingView', icon: '📊', description: 'A planned charting shortcut and digit-market context workspace. It is not active yet.' },
+    }[feature];
+    return <section className='smartpips-coming-soon'>
+        <div className='smartpips-coming-soon__icon' aria-hidden='true'>{content.icon}</div>
+        <h2>{content.title}</h2>
+        <p>{content.description}</p>
+        <span className='smartpips-coming-soon__status'>COMING SOON</span>
+        <p className='smartpips-coming-soon__note'>SmartPips is focused on Deriv digit trading. This section will be developed around digit markets and contracts.</p>
     </section>;
 };
 
@@ -121,7 +139,7 @@ const AppWrapper = observer(() => {
     const { clear } = summary_card;
     const { DASHBOARD, BOT_BUILDER } = DBOT_TABS;
     const init_render = React.useRef(true);
-    const hash = ['dashboard', 'bot_builder', 'chart', 'tutorial', 'analysis-tool', 'free-bots', 'risk-calculator', 'account-management', 'trade-history'];
+    const hash = ['dashboard', 'bot_builder', 'trading-bots', 'bulk-trader', 'pro-ai', 'dual-edge', 'analysis-tool', 'copy-trading', 'chart', 'risk-calculator', 'manual-trader', 'tradingview', 'tutorial', 'account-management', 'trade-history'];
     const { isDesktop } = useDevice();
     const location = useLocation();
     const navigate = useNavigate();
@@ -420,104 +438,39 @@ const AppWrapper = observer(() => {
                     <div>
                         {!isDesktop && left_tab_shadow && <span className='tabs-shadow tabs-shadow--left' />}{' '}
                         <Tabs active_index={active_tab} className='main__tabs' onTabItemClick={handleTabChange} top>
-                            <div
-                                label={
-                                    <>
-                                        <LabelPairedObjectsColumnCaptionRegularIcon
-                                            height='24px'
-                                            width='24px'
-                                            fill='var(--text-general)'
-                                        />
-                                        <Localize i18n_default_text='Dashboard' />
-                                    </>
-                                }
-                                id='id-dbot-dashboard'
-                            >
+                            <div label={<><span className='smartpips-tab-icon'>🏠</span><Localize i18n_default_text='Dashboard' /></>} id='id-dbot-dashboard'>
                                 <Dashboard handleTabChange={handleTabChange} />
                             </div>
-                            <div
-                                label={
-                                    <>
-                                        <LabelPairedPuzzlePieceTwoCaptionBoldIcon
-                                            height='24px'
-                                            width='24px'
-                                            fill='var(--text-general)'
-                                        />
-                                        <Localize i18n_default_text='Bot Builder' />
-                                    </>
-                                }
-                                id='id-bot-builder'
-                            />
-                            <div
-                                label={
-                                    <>
-                                        <LabelPairedChartLineCaptionRegularIcon
-                                            height='24px'
-                                            width='24px'
-                                            fill='var(--text-general)'
-                                        />
-                                        <Localize i18n_default_text='Charts' />
-                                    </>
-                                }
-                                id={
-                                    is_chart_modal_visible || is_trading_view_modal_visible
-                                        ? 'id-charts--disabled'
-                                        : 'id-charts'
-                                }
-                            >
-                                <Suspense
-                                    fallback={<ChunkLoader message={localize('Please wait, loading chart...')} />}
-                                >
+                            <div label={<><span className='smartpips-tab-icon'>🧩</span><Localize i18n_default_text='Bot Builder' /></>} id='id-bot-builder' />
+                            <div label={<><span className='smartpips-tab-icon'>🤖</span><Localize i18n_default_text='Trading Bots' /></>} id='id-free-bots'>
+                                <SmartPipsFeatureTab feature='free-bots' handleTabChange={handleTabChange} />
+                            </div>
+                            <div label={<><span className='smartpips-tab-icon'>📦</span>Bulk Trader</>} id='id-bulk-trader'><SmartPipsComingSoonTab feature='bulk-trader' /></div>
+                            <div label={<><span className='smartpips-tab-icon'>✨</span>Pro AI</>} id='id-pro-ai'><SmartPipsComingSoonTab feature='pro-ai' /></div>
+                            <div label={<><span className='smartpips-tab-icon'>🔁</span>Dual Edge</>} id='id-dual-edge'><SmartPipsComingSoonTab feature='dual-edge' /></div>
+                            <div label={<><span className='smartpips-tab-icon'>🔍</span><Localize i18n_default_text='Analysis Tool' /></>} id='id-analysis-tool'>
+                                <Suspense fallback={<ChunkLoader message={localize('Please wait, loading digit analysis...')} />}>
+                                    <AnalysisTool />
+                                </Suspense>
+                            </div>
+                            <div label={<><span className='smartpips-tab-icon'>📋</span>Copy Trading</>} id='id-copy-trading'><SmartPipsComingSoonTab feature='copy-trading' /></div>
+                            <div label={<><span className='smartpips-tab-icon'>📈</span><Localize i18n_default_text='Charts' /></>} id='id-charts'>
+                                <Suspense fallback={<ChunkLoader message={localize('Please wait, loading chart...')} />}>
                                     <ChartWrapper show_digits_stats={false} />
                                 </Suspense>
                             </div>
-                            <div
-                                label={
-                                    <>
-                                        <LegacyGuide1pxIcon
-                                            height='16px'
-                                            width='16px'
-                                            fill='var(--text-general)'
-                                            className='icon-general-fill-g-path'
-                                        />
-                                        <Localize i18n_default_text='Tutorials' />
-                                    </>
-                                }
-                                id='id-tutorials'
-                            >
+                            <div label={<><span className='smartpips-tab-icon'>🧮</span>Risk Calculator</>} id='id-risk-calculator'><SmartPipsFeatureTab feature='risk-calculator' handleTabChange={handleTabChange} /></div>
+                            <div label={<><span className='smartpips-tab-icon'>🖐️</span>Manual Trader</>} id='id-manual-trader'><SmartPipsComingSoonTab feature='manual-trader' /></div>
+                            <div label={<><span className='smartpips-tab-icon'>📊</span>TradingView</>} id='id-tradingview'><SmartPipsComingSoonTab feature='tradingview' /></div>
+                            <div label={<><span className='smartpips-tab-icon'>🎓</span><Localize i18n_default_text='Tutorials' /></>} id='id-tutorials'>
                                 <div className='tutorials-wrapper'>
-                                    <Suspense
-                                        fallback={
-                                            <ChunkLoader message={localize('Please wait, loading tutorials...')} />
-                                        }
-                                    >
+                                    <Suspense fallback={<ChunkLoader message={localize('Please wait, loading tutorials...')} />}>
                                         <Tutorial handleTabChange={handleTabChange} />
                                     </Suspense>
                                 </div>
                             </div>
-                            <div
-                                label={
-                                    <>
-                                        <LabelPairedChartLineCaptionRegularIcon
-                                            height='24px'
-                                            width='24px'
-                                            fill='var(--text-general)'
-                                        />
-                                        <Localize i18n_default_text='Digit Analysis' />
-                                    </>
-                                }
-                                id='id-analysis-tool'
-                            >
-                                <Suspense
-                                    fallback={<ChunkLoader message={localize('Please wait, loading digit analysis...')} />}
-                                >
-                                    <AnalysisTool />
-                                </Suspense>
-                            </div>
-                            <div label={<span>Free Bots</span>} id='id-free-bots'><SmartPipsFeatureTab feature='free-bots' handleTabChange={handleTabChange} /></div>
-                            <div label={<span>Risk Calculator</span>} id='id-risk-calculator'><SmartPipsFeatureTab feature='risk-calculator' handleTabChange={handleTabChange} /></div>
-                            <div label={<span>Account Management</span>} id='id-account-management'><SmartPipsFeatureTab feature='account' handleTabChange={handleTabChange} /></div>
-                            <div label={<span>Trade History</span>} id='id-trade-history'><SmartPipsFeatureTab feature='history' handleTabChange={handleTabChange} /></div>
+                            <div label={<><span className='smartpips-tab-icon'>👤</span>Account Management</>} id='id-account-management'><SmartPipsFeatureTab feature='account' handleTabChange={handleTabChange} /></div>
+                            <div label={<><span className='smartpips-tab-icon'>🕘</span>Trade History</>} id='id-trade-history'><SmartPipsFeatureTab feature='history' handleTabChange={handleTabChange} /></div>
                         </Tabs>
                         {!isDesktop && right_tab_shadow && <span className='tabs-shadow tabs-shadow--right' />}{' '}
                     </div>
