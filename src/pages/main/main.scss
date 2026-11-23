@@ -754,3 +754,74 @@
     align-items: center;
     justify-content: center;
 }
+
+/* SmartPips navigation accents and feature-card motion */
+.smartpips-tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-inline-end: 0.8rem;
+    color: #35c7f4;
+    font-size: 1.8rem;
+    line-height: 1;
+    transform-origin: center;
+    transition: transform 180ms ease, filter 180ms ease;
+}
+
+.dc-tabs__item:hover .smartpips-tab-icon {
+    transform: translateY(-1px) scale(1.08);
+    filter: drop-shadow(0 0 5px rgba(53, 199, 244, 0.4));
+}
+.dc-tabs__item.dc-tabs__active .smartpips-tab-icon {
+    filter: drop-shadow(0 0 5px rgba(53, 199, 244, 0.28));
+}
+.smartpips-coming-soon {
+    position: relative;
+    max-width: 1000px;
+    min-height: 280px;
+    margin: 2.4rem auto;
+    padding: 3.2rem 2.4rem;
+    overflow: hidden;
+    text-align: center;
+    color: var(--text-general);
+    border: 1px solid rgba(53, 199, 244, 0.22);
+    border-radius: 1.6rem;
+    background: radial-gradient(ellipse at top, rgba(53, 199, 244, 0.12), transparent 65%), var(--general-section-1);
+}
+.smartpips-coming-soon__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 6.4rem;
+    height: 6.4rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid rgba(53, 199, 244, 0.25);
+    border-radius: 1.8rem;
+    background: rgba(53, 199, 244, 0.08);
+    font-size: 3rem;
+    animation: smartpips-icon-float 3s ease-in-out infinite;
+}
+.smartpips-coming-soon__status {
+    display: inline-block;
+    margin-top: 1.2rem;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid rgba(53, 199, 244, 0.35);
+    border-radius: 999px;
+    color: #35c7f4;
+    background: rgba(53, 199, 244, 0.08);
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+.smartpips-coming-soon__note {
+    max-width: 650px;
+    margin: 1.6rem auto 0;
+    opacity: 0.75;
+}
+@keyframes smartpips-icon-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .smartpips-tab-icon, .smartpips-coming-soon__icon { transition: none; animation: none; }
+}
