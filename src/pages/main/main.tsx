@@ -44,6 +44,7 @@ import Dashboard from '../dashboard';
 import RunStrategy from '../dashboard/run-strategy';
 import { Icon } from '@/utils/tmp/dummy';
 import './main.scss';
+import { queueSmartPipsBot } from './smartpips-bot-templates';
 
 const ChartWrapper = lazy(() => import('../chart/chart-wrapper'));
 const Tutorial = lazy(() => import('../tutorials'));
@@ -56,10 +57,10 @@ const SmartPipsTradingBots = ({ handleTabChange }: { handleTabChange: (index: nu
     const [selectedBot, setSelectedBot] = useState<string | null>(null);
     const categories = ['Free Bots', 'Scalper Bots', 'SpeedBots', 'Calculator', 'Strategies'];
     const bots = [
-        { title: 'Alpha Version 2026 Edition', category: 'Free Bots', description: 'Digit-focused starter bot with configurable entry rules and stake controls.', premium: true },
-        { title: 'AI SIGNAL SCANNER', category: 'Free Bots', description: 'Digit-market signal workspace preview with risk-aware execution settings.', premium: true },
+        { title: 'Alpha Version 2026 Edition', category: 'Free Bots', description: 'Digit Over/Under template on R_100 with a 5 barrier and low fixed stake.', premium: false, template: 'alpha-over-under' },
+        { title: 'AI SIGNAL SCANNER', category: 'Free Bots', description: 'Matches/Differs template for digit 7; a rule-based scanner, not predictive AI.', premium: false, template: 'scanner-matches-differs' },
         { title: 'Binary Expert V6 pro', category: 'Free Bots', description: 'Digit-contract strategy preview with configurable rules and trade limits.', premium: true },
-        { title: 'SMARTPIPS BOT11', category: 'Free Bots', description: 'SmartPips digit strategy template for testing contract ideas on demo.', premium: true },
+        { title: 'SMARTPIPS BOT11', category: 'Free Bots', description: 'Even/Odd starter template on R_100 with a fixed low stake.', premium: false, template: 'bot11-even-odd' },
         { title: 'SmartPips AI Version 2026', category: 'Free Bots', description: 'Digit analysis and strategy helper preview, built around Deriv digit contracts.', premium: true },
         { title: 'Dp Entry point Bot V1', category: 'Free Bots', description: 'Entry-condition template for digit trading with configurable limits.', premium: true },
         { title: 'Even Odd Precision', category: 'Scalper Bots', description: 'Even/Odd digit-contract template with stake and session controls.', premium: false },
@@ -85,7 +86,7 @@ const SmartPipsTradingBots = ({ handleTabChange }: { handleTabChange: (index: nu
                 <input type='search' value={search} onChange={event => setSearch(event.target.value)} placeholder='Search bots...' aria-label='Search bots' />
             </div>
             {selectedBot && <div className='smartpips-bots-selected' role='status'>
-                <strong>{selectedBot}</strong> selected. These bot cards are interface previews; executable bot files are not yet connected.
+                <strong>{selectedBot}</strong> strategy loaded request queued. The workspace will open with the template; review the settings before you run it.
                 <button type='button' onClick={() => handleTabChange(1)}>Open Bot Builder</button>
                 <button type='button' className='smartpips-bots-selected__dismiss' onClick={() => setSelectedBot(null)} aria-label='Dismiss selected bot notice'>×</button>
             </div>}
@@ -98,7 +99,7 @@ const SmartPipsTradingBots = ({ handleTabChange }: { handleTabChange: (index: nu
                     </div>
                     <div className='smartpips-bot-card__rating' aria-label='5 out of 5 stars'>★★★★★</div>
                     <p className='smartpips-bot-card__description'>{bot.description}</p>
-                    <button type='button' className='smartpips-bot-card__load' onClick={() => bot.calculator ? handleTabChange(9) : setSelectedBot(bot.title)}>{bot.calculator ? 'OPEN CALCULATOR' : bot.premium ? 'LOAD PREMIUM BOT' : 'LOAD BOT'}</button>
+                    <button type='button' className='smartpips-bot-card__load' onClick={() => { if (bot.calculator) { handleTabChange(9); return; } if (bot.template) { queueSmartPipsBot(bot.template); setSelectedBot(bot.title); handleTabChange(1); } else { setSelectedBot(bot.title); } }}>{bot.calculator ? 'OPEN CALCULATOR' : bot.template ? 'LOAD BOT' : bot.premium ? 'LOAD PREMIUM BOT' : 'LOAD BOT'}</button>
                 </article>)}
                 {visibleBots.length === 0 && <div className='smartpips-bots-empty'>No bots found for this category and search.</div>}
             </div>
