@@ -42,6 +42,7 @@ import RunPanel from '../../components/run-panel';
 import ChartModal from '../chart/chart-modal';
 import Dashboard from '../dashboard';
 import RunStrategy from '../dashboard/run-strategy';
+import { Icon } from '@/utils/tmp/dummy';
 import './main.scss';
 
 const ChartWrapper = lazy(() => import('../chart/chart-wrapper'));
@@ -438,39 +439,39 @@ const AppWrapper = observer(() => {
                     <div>
                         {!isDesktop && left_tab_shadow && <span className='tabs-shadow tabs-shadow--left' />}{' '}
                         <Tabs active_index={active_tab} className='main__tabs' onTabItemClick={handleTabChange} top>
-                            <div label={<><span className='smartpips-tab-icon'>🏠</span><Localize i18n_default_text='Dashboard' /></>} id='id-dbot-dashboard'>
+                            <div label={<><Icon icon='IcDashboard' size={24} className='smartpips-tab-icon' /><Localize i18n_default_text='Dashboard' /></>} id='id-dbot-dashboard'>
                                 <Dashboard handleTabChange={handleTabChange} />
                             </div>
-                            <div label={<><span className='smartpips-tab-icon'>🧩</span><Localize i18n_default_text='Bot Builder' /></>} id='id-bot-builder' />
-                            <div label={<><span className='smartpips-tab-icon'>🤖</span><Localize i18n_default_text='Trading Bots' /></>} id='id-free-bots'>
+                            <div label={<><Icon icon='IcBotBuilder' size={24} className='smartpips-tab-icon' /><Localize i18n_default_text='Bot Builder' /></>} id='id-bot-builder' />
+                            <div label={<><Icon icon='IcQuickStrategy' size={24} className='smartpips-tab-icon' /><Localize i18n_default_text='Trading Bots' /></>} id='id-free-bots'>
                                 <SmartPipsFeatureTab feature='free-bots' handleTabChange={handleTabChange} />
                             </div>
-                            <div label={<><span className='smartpips-tab-icon'>📦</span>Bulk Trader</>} id='id-bulk-trader'><SmartPipsComingSoonTab feature='bulk-trader' /></div>
-                            <div label={<><span className='smartpips-tab-icon'>✨</span>Pro AI</>} id='id-pro-ai'><SmartPipsComingSoonTab feature='pro-ai' /></div>
-                            <div label={<><span className='smartpips-tab-icon'>🔁</span>Dual Edge</>} id='id-dual-edge'><SmartPipsComingSoonTab feature='dual-edge' /></div>
-                            <div label={<><span className='smartpips-tab-icon'>🔍</span><Localize i18n_default_text='Analysis Tool' /></>} id='id-analysis-tool'>
+                            <div label={<><Icon icon='IcBox' size={24} className='smartpips-tab-icon' />Bulk Trader</>} id='id-bulk-trader'><SmartPipsComingSoonTab feature='bulk-trader' /></div>
+                            <div label={<><Icon icon='IcQuickStrategy' size={24} className='smartpips-tab-icon' />Pro AI</>} id='id-pro-ai'><SmartPipsComingSoonTab feature='pro-ai' /></div>
+                            <div label={<><Icon icon='IcRedo' size={24} className='smartpips-tab-icon' />Dual Edge</>} id='id-dual-edge'><SmartPipsComingSoonTab feature='dual-edge' /></div>
+                            <div label={<><Icon icon='IcSearch' size={24} className='smartpips-tab-icon' /><Localize i18n_default_text='Analysis Tool' /></>} id='id-analysis-tool'>
                                 <Suspense fallback={<ChunkLoader message={localize('Please wait, loading digit analysis...')} />}>
                                     <AnalysisTool />
                                 </Suspense>
                             </div>
-                            <div label={<><span className='smartpips-tab-icon'>📋</span>Copy Trading</>} id='id-copy-trading'><SmartPipsComingSoonTab feature='copy-trading' /></div>
-                            <div label={<><span className='smartpips-tab-icon'>📈</span><Localize i18n_default_text='Charts' /></>} id='id-charts'>
+                            <div label={<><Icon icon='IcMigrateStrategy' size={24} className='smartpips-tab-icon' />Copy Trading</>} id='id-copy-trading'><SmartPipsComingSoonTab feature='copy-trading' /></div>
+                            <div label={<><Icon icon='IcChart' size={24} className='smartpips-tab-icon' /><Localize i18n_default_text='Charts' /></>} id='id-charts'>
                                 <Suspense fallback={<ChunkLoader message={localize('Please wait, loading chart...')} />}>
                                     <ChartWrapper show_digits_stats={false} />
                                 </Suspense>
                             </div>
-                            <div label={<><span className='smartpips-tab-icon'>🧮</span>Risk Calculator</>} id='id-risk-calculator'><SmartPipsFeatureTab feature='risk-calculator' handleTabChange={handleTabChange} /></div>
-                            <div label={<><span className='smartpips-tab-icon'>🖐️</span>Manual Trader</>} id='id-manual-trader'><SmartPipsComingSoonTab feature='manual-trader' /></div>
-                            <div label={<><span className='smartpips-tab-icon'>📊</span>TradingView</>} id='id-tradingview'><SmartPipsComingSoonTab feature='tradingview' /></div>
-                            <div label={<><span className='smartpips-tab-icon'>🎓</span><Localize i18n_default_text='Tutorials' /></>} id='id-tutorials'>
+                            <div label={<><Icon icon='IcReports' size={24} className='smartpips-tab-icon' />Risk Calculator</>} id='id-risk-calculator'><SmartPipsFeatureTab feature='risk-calculator' handleTabChange={handleTabChange} /></div>
+                            <div label={<><Icon icon='IcPlay' size={24} className='smartpips-tab-icon' />Manual Trader</>} id='id-manual-trader'><SmartPipsComingSoonTab feature='manual-trader' /></div>
+                            <div label={<><Icon icon='IcTradingViewChart' size={24} className='smartpips-tab-icon' />TradingView</>} id='id-tradingview'><SmartPipsComingSoonTab feature='tradingview' /></div>
+                            <div label={<><Icon icon='IcTutorials' size={24} className='smartpips-tab-icon' /><Localize i18n_default_text='Tutorials' /></>} id='id-tutorials'>
                                 <div className='tutorials-wrapper'>
                                     <Suspense fallback={<ChunkLoader message={localize('Please wait, loading tutorials...')} />}>
                                         <Tutorial handleTabChange={handleTabChange} />
                                     </Suspense>
                                 </div>
                             </div>
-                            <div label={<><span className='smartpips-tab-icon'>👤</span>Account Management</>} id='id-account-management'><SmartPipsFeatureTab feature='account' handleTabChange={handleTabChange} /></div>
-                            <div label={<><span className='smartpips-tab-icon'>🕘</span>Trade History</>} id='id-trade-history'><SmartPipsFeatureTab feature='history' handleTabChange={handleTabChange} /></div>
+                            <div label={<><Icon icon='IcReports' size={24} className='smartpips-tab-icon' />Account Management</>} id='id-account-management'><SmartPipsFeatureTab feature='account' handleTabChange={handleTabChange} /></div>
+                            <div label={<><Icon icon='IcReports' size={24} className='smartpips-tab-icon' />Trade History</>} id='id-trade-history'><SmartPipsFeatureTab feature='history' handleTabChange={handleTabChange} /></div>
                         </Tabs>
                         {!isDesktop && right_tab_shadow && <span className='tabs-shadow tabs-shadow--right' />}{' '}
                     </div>
