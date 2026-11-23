@@ -50,6 +50,62 @@ const Tutorial = lazy(() => import('../tutorials'));
 const AnalysisTool = lazy(() => import('../analysis-tool'));
 
 
+const SmartPipsTradingBots = ({ handleTabChange }: { handleTabChange: (index: number) => void }) => {
+    const [category, setCategory] = useState('Free Bots');
+    const [search, setSearch] = useState('');
+    const [selectedBot, setSelectedBot] = useState<string | null>(null);
+    const categories = ['Free Bots', 'Scalper Bots', 'SpeedBots', 'Calculator', 'Strategies'];
+    const bots = [
+        { title: 'Alpha Version 2026 Edition', category: 'Free Bots', description: 'Digit-focused starter bot with configurable entry rules and stake controls.', premium: true },
+        { title: 'AI SIGNAL SCANNER', category: 'Free Bots', description: 'Digit-market signal workspace preview with risk-aware execution settings.', premium: true },
+        { title: 'Binary Expert V6 pro', category: 'Free Bots', description: 'Digit-contract strategy preview with configurable rules and trade limits.', premium: true },
+        { title: 'SMARTPIPS BOT11', category: 'Free Bots', description: 'SmartPips digit strategy template for testing contract ideas on demo.', premium: true },
+        { title: 'SmartPips AI Version 2026', category: 'Free Bots', description: 'Digit analysis and strategy helper preview, built around Deriv digit contracts.', premium: true },
+        { title: 'Dp Entry point Bot V1', category: 'Free Bots', description: 'Entry-condition template for digit trading with configurable limits.', premium: true },
+        { title: 'Even Odd Precision', category: 'Scalper Bots', description: 'Even/Odd digit-contract template with stake and session controls.', premium: false },
+        { title: 'Over Under Edge', category: 'Scalper Bots', description: 'Over/Under digit strategy template with adjustable barrier and limits.', premium: false },
+        { title: 'Matches Differs Pro', category: 'Scalper Bots', description: 'Matches/Differs digit-contract template for demo testing.', premium: false },
+        { title: 'Quick Digit Scalper', category: 'Scalper Bots', description: 'Short-session digit strategy template with configurable entry conditions.', premium: false },
+        { title: 'Speed Even/Odd', category: 'SpeedBots', description: 'Fast setup for Even/Odd digit contracts with configurable trade caps.', premium: false },
+        { title: 'Speed Over/Under', category: 'SpeedBots', description: 'Quick Over/Under digit template with risk limits.', premium: false },
+        { title: 'Speed Matches/Differs', category: 'SpeedBots', description: 'Rapid configuration for Matches/Differs digit contracts.', premium: false },
+        { title: 'Digit Stake Calculator', category: 'Calculator', description: 'Open the risk calculator to estimate stake budget and trade exposure.', premium: false, calculator: true },
+        { title: 'Digit Strategy Library', category: 'Strategies', description: 'Browse and compare digit strategy concepts before testing them.', premium: false },
+        { title: 'Last Digit Frequency', category: 'Strategies', description: 'Explore last-digit frequency and distribution from the analysis tool.', premium: false },
+    ];
+    const visibleBots = bots.filter(bot => (category === 'Strategies' ? bot.category === 'Strategies' : bot.category === category) && (bot.title.toLowerCase().includes(search.trim().toLowerCase()) || bot.description.toLowerCase().includes(search.trim().toLowerCase())));
+    return <div className='smartpips-bots-page'>
+        <nav className='smartpips-bots-categories' aria-label='Trading bot categories'>
+            {categories.map(item => <button type='button' key={item} className={category === item ? 'smartpips-bots-category smartpips-bots-category--active' : 'smartpips-bots-category'} onClick={() => { setCategory(item); setSelectedBot(null); }}>
+                <span className='smartpips-bots-category__icon' aria-hidden='true'>{item === 'Free Bots' ? '♙' : item === 'Scalper Bots' ? '♟' : item === 'SpeedBots' ? '🚀' : item === 'Calculator' ? '▦' : '♧'}</span>{item}
+            </button>)}
+        </nav>
+        <section className='smartpips-bots-library'>
+            <div className='smartpips-bots-search'>
+                <input type='search' value={search} onChange={event => setSearch(event.target.value)} placeholder='Search bots...' aria-label='Search bots' />
+            </div>
+            {selectedBot && <div className='smartpips-bots-selected' role='status'>
+                <strong>{selectedBot}</strong> selected. These bot cards are interface previews; executable bot files are not yet connected.
+                <button type='button' onClick={() => handleTabChange(1)}>Open Bot Builder</button>
+                <button type='button' className='smartpips-bots-selected__dismiss' onClick={() => setSelectedBot(null)} aria-label='Dismiss selected bot notice'>×</button>
+            </div>}
+            <div className='smartpips-bots-grid'>
+                {visibleBots.map(bot => <article className='smartpips-bot-card' key={bot.title}>
+                    {bot.premium && <span className='smartpips-bot-card__premium'>PREMIUM</span>}
+                    <div className='smartpips-bot-card__heading'>
+                        <span className='smartpips-bot-card__robot' aria-hidden='true'>🤖</span>
+                        <h3>{bot.title}</h3>
+                    </div>
+                    <div className='smartpips-bot-card__rating' aria-label='5 out of 5 stars'>★★★★★</div>
+                    <p className='smartpips-bot-card__description'>{bot.description}</p>
+                    <button type='button' className='smartpips-bot-card__load' onClick={() => bot.calculator ? handleTabChange(9) : setSelectedBot(bot.title)}>{bot.calculator ? 'OPEN CALCULATOR' : bot.premium ? 'LOAD PREMIUM BOT' : 'LOAD BOT'}</button>
+                </article>)}
+                {visibleBots.length === 0 && <div className='smartpips-bots-empty'>No bots found for this category and search.</div>}
+            </div>
+        </section>
+    </div>;
+};
+
 const SmartPipsFeatureTab = ({ feature, handleTabChange }: { feature: 'free-bots' | 'risk-calculator' | 'account' | 'history'; handleTabChange: (index: number) => void }) => {
     const [capital, setCapital] = useState('100');
     const [riskPercent, setRiskPercent] = useState('2');
@@ -60,35 +116,20 @@ const SmartPipsFeatureTab = ({ feature, handleTabChange }: { feature: 'free-bots
     const budget = balance * risk / 100;
     const entries = stakeValue > 0 ? Math.floor(budget / stakeValue) : 0;
     const panel: React.CSSProperties = { maxWidth: 1100, margin: '24px auto', padding: 24, color: 'var(--text-general)', border: '1px solid var(--border-normal)', borderRadius: 14 };
-    const card: React.CSSProperties = { padding: 18, border: '1px solid var(--border-normal)', borderRadius: 12, background: 'var(--general-section-1)' };
-    if (feature === 'free-bots') return <section style={panel}>
-        <h2>Trading Bots — Free Digit Bots</h2>
-        <p>Explore digit-contract starter strategies. These cards are learning pathways, not downloadable or executable bots yet.</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-            <div style={card}><h3>Even / Odd</h3><p>Review last-digit parity and recent digit distribution.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div>
-            <div style={card}><h3>Matches / Differs</h3><p>Study selected-digit match rates before testing a strategy.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div>
-            <div style={card}><h3>Over / Under</h3><p>Review digit barriers and recent last-digit distribution.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div><div style={card}><h3>Digit Pattern</h3><p>Explore digit sequences and frequency before testing a rule.</p><button onClick={() => handleTabChange(6)}>Open Analysis Tool</button></div>
-        </div>
-        <p>Use a demo account first. No strategy guarantees profit.</p>
-    </section>;
+    if (feature === 'free-bots') return <SmartPipsTradingBots handleTabChange={handleTabChange} />;
     if (feature === 'risk-calculator') return <section style={panel}>
         <h2>Risk Calculator</h2><p>Estimate a risk budget before trading. This is a planning aid, not a prediction or guarantee of safety.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14 }}>
-            <label>Account balance<input style={{ display: 'block', width: '100%', marginTop: 8 }} type="number" min="0" step="any" value={capital} onChange={e => setCapital(e.target.value)} /></label>
-            <label>Risk limit (%)<input style={{ display: 'block', width: '100%', marginTop: 8 }} type="number" min="0" max="100" step="0.1" value={riskPercent} onChange={e => setRiskPercent(e.target.value)} /></label>
-            <label>Stake per trade<input style={{ display: 'block', width: '100%', marginTop: 8 }} type="number" min="0" step="any" value={stake} onChange={e => setStake(e.target.value)} /></label>
+            <label>Account balance<input style={{ display: 'block', width: '100%', marginTop: 8 }} type='number' min='0' step='any' value={capital} onChange={e => setCapital(e.target.value)} /></label>
+            <label>Risk limit (%)<input style={{ display: 'block', width: '100%', marginTop: 8 }} type='number' min='0' max='100' step='0.1' value={riskPercent} onChange={e => setRiskPercent(e.target.value)} /></label>
+            <label>Stake per trade<input style={{ display: 'block', width: '100%', marginTop: 8 }} type='number' min='0' step='any' value={stake} onChange={e => setStake(e.target.value)} /></label>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 30, marginTop: 22 }}><div><small>Risk budget</small><h2>{budget.toFixed(2)}</h2></div><div><small>Stake-sized entries within budget</small><h2>{entries}</h2></div></div>
     </section>;
-    if (feature === 'account') return <section style={panel}><h2>Account Management</h2>
-        <p>Use the account selector in the app header to switch between your available Deriv accounts. The account balance shown by the app should come from your connected Deriv session.</p>
-        <p><strong>Before trading:</strong> confirm whether the selected account is demo or real, check the currency and balance, and never share your password or API token.</p>
-        <p>This panel does not change account settings, transfer funds, or override Deriv's account controls.</p>
+    if (feature === 'account') return <section style={panel}>
+        <h2>Account Management</h2><p>Use the account selector in the app header to switch between your available Deriv accounts. The account balance shown by the app should come from your connected Deriv session.</p><p><strong>Before trading:</strong> confirm whether the selected account is demo or real, check the currency and balance, and never share your password or API token.</p><p>This panel does not change account settings, transfer funds, or override Deriv's account controls.</p>
     </section>;
-    return <section style={panel}><h2>Trade History</h2>
-        <p>Your dedicated history tab is ready as the place for your real records, but it is not yet connected to Deriv transaction/statement data.</p>
-        <p>No sample trades are shown as real. The next integration step is to request authorized transaction history from Deriv and display the returned records, timestamps, contract details, and profit/loss.</p>
-    </section>;
+    return <section style={panel}><h2>Trade History</h2><p>Your dedicated history tab is ready as the place for your real records, but it is not yet connected to Deriv transaction/statement data.</p><p>No sample trades are shown as real. The next integration step is to request authorized transaction history from Deriv and display the returned records, timestamps, contract details, and profit/loss.</p></section>;
 };
 
 const SmartPipsComingSoonTab = ({ feature }: { feature: 'bulk-trader' | 'pro-ai' | 'dual-edge' | 'copy-trading' | 'manual-trader' | 'tradingview' }) => {
