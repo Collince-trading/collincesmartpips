@@ -104,21 +104,9 @@ const DashboardComponent = observer(({ handleTabChange }: TMobileIconGuide) => {
                             <h2 style={{ marginTop: 0 }}>{featureTitle[feature]}</h2>
                             {feature === 'free-bots' && (
                                 <div>
-                                    <p>Starter strategies are listed here for setup and learning. These cards do not start trades automatically and do not promise profits.</p>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12 }}>
-                                        {[
-                                            { title: 'Even / Odd Practice', detail: 'Review last-digit parity in the Digit Analysis tab.', action: 'Open analysis' },
-                                            { title: 'Matches / Differs Practice', detail: 'Study how often the latest digit matches a selected digit.', action: 'Open analysis' },
-                                            { title: 'Over / Under Practice', detail: 'Study digit barriers and recent last-digit distribution before testing a rule.', action: 'Open analysis' },
-                                        ].map(bot => (
-                                            <div key={bot.title} style={{ border: '1px solid var(--border-normal, #d8dce3)', borderRadius: 10, padding: 14 }}>
-                                                <strong>{bot.title}</strong>
-                                                <p style={{ fontSize: 13, lineHeight: 1.5 }}>{bot.detail}</p>
-                                                <button type='button' onClick={() => handleTabChange(6)}>{bot.action}</button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <p style={{ fontSize: 13, marginBottom: 0 }}>These are learning shortcuts, not deployed automated bots yet. Test any future trading strategy on a demo account first.</p>
+                                    <p>The three starter bots are now available in the Trading Bots library. Open that tab to load a strategy directly into Bot Builder. Loading a template does not start trades.</p>
+                                    <button type='button' onClick={() => handleTabChange(2)}>Open Trading Bots library</button>
+                                    <p style={{ fontSize: 13, marginTop: 12, marginBottom: 0 }}>Always inspect contract type, stake, symbol, and barrier before running. Demo testing is strongly recommended.</p>
                                 </div>
                             )}
                             {feature === 'risk-calculator' && (
