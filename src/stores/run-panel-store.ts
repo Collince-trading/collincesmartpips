@@ -243,39 +243,52 @@ export default class RunPanelStore {
         }
     };
 
-    stopBot = () => {
+    stopBot = async () => {
         const { ui } = this.core;
 
-        this.dbot.stopBot();
+        // Stopping the interpreter is asynchronous. Await it so a rejected stop
+        // cannot become an unhandled promise rejection that takes down the app.
+        try {
+            await this.dbot?.stopBot?.();
+        } catch (error) {
+            console.error('Unable to stop the bot interpreter cleanly:', error);
+            try {
+                await this.dbot?.terminateBot?.();
+            } catch (terminate_error) {
+                console.error('Unable to terminate the bot interpreter:', terminate_error);
+            }
+        } finally {
+            ui.setPromptHandler(false);
 
-        ui.setPromptHandler(false);
+            if (this.error_type) {
+                this.setContractStage(contract_stages.NOT_RUNNING);
+                this.unregisterBotListeners();
+                ui.setAccountSwitcherDisabledMessage();
+                this.setIsRunning(false);
+                this.setHasOpenContract(false);
+                this.error_type = undefined;
+            } else if (this.has_open_contract) {
+                // The current contract may still be active; keep its status visible.
+                this.setContractStage(contract_stages.IS_STOPPING);
+            } else {
+                this.setContractStage(contract_stages.NOT_RUNNING);
+                this.unregisterBotListeners();
+                ui.setAccountSwitcherDisabledMessage();
+                this.setIsRunning(false);
+            }
 
-        if (this.error_type) {
-            // when user click stop button when there is a error but bot is retrying
-            this.setContractStage(contract_stages.NOT_RUNNING);
-            ui.setAccountSwitcherDisabledMessage();
-            this.setIsRunning(false);
-        } else if (this.has_open_contract) {
-            // when user click stop button when bot is running
-            this.setContractStage(contract_stages.IS_STOPPING);
-        } else {
-            // when user click stop button before bot start running
-            this.setContractStage(contract_stages.NOT_RUNNING);
-            this.unregisterBotListeners();
-            ui.setAccountSwitcherDisabledMessage();
-            this.setIsRunning(false);
-        }
-
-        if (this.error_type) {
-            this.error_type = undefined;
-        }
-
-        if (this.timer) {
-            clearInterval(this.timer);
-        }
-        if (window.sendRequestsStatistic) {
-            window.sendRequestsStatistic(true);
-            performance.clearMeasures();
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+            if (window.sendRequestsStatistic) {
+                try {
+                    window.sendRequestsStatistic(true);
+                    performance.clearMeasures();
+                } catch (error) {
+                    console.warn('Unable to flush bot request statistics:', error);
+                }
+            }
         }
     };
 
