@@ -1,5 +1,6 @@
 // @ts-nocheck — vendored bot code with known upstream type gaps; see AGENTS.md
 // Removed unused React import - React 17+ JSX transform doesn't require it
+import React from 'react';
 import localForage from 'localforage';
 import LZString from 'lz-string';
 import { observer } from 'mobx-react-lite';
@@ -18,6 +19,7 @@ const DeleteDialog = observer(() => {
         is_delete_modal_open,
         onToggleDeleteDialog,
         selected_strategy_id,
+        setSelectedStrategyId,
         setDashboardStrategies,
         loadStrategyToBuilder,
         refreshStrategiesTheme,
@@ -25,12 +27,16 @@ const DeleteDialog = observer(() => {
     } = load_modal;
     const { setOpenSettings } = dashboard;
 
+    const [is_deleting, setIsDeleting] = React.useState(false);
+
     const resetStrategiesAfterDelete = async (deleted_strategy_id: string, updated_workspaces: Array<TStrategy>) => {
         if (updated_workspaces.length) {
             if (selected_strategy_id === deleted_strategy_id) {
-                await loadStrategyToBuilder(updated_workspaces?.[0], false);
+                // Keep the selected id in sync with the new list before refreshing
+                // the preview; otherwise the preview can point at a deleted strategy.
+                setSelectedStrategyId(updated_workspaces[0].id);
+                await loadStrategyToBuilder(updated_workspaces[0], false);
             }
-            // Change preview strategy to the one that was previously previewed
             await refreshStrategiesTheme();
         } else {
             resetBotBuilderStrategy();
@@ -38,15 +44,30 @@ const DeleteDialog = observer(() => {
     };
 
     const removeBotStrategy = async (strategy_id: string) => {
-        const workspaces = await getSavedWorkspaces();
+        const workspaces = (await getSavedWorkspaces()) || [];
         const updated_workspaces = workspaces.filter(
             (strategy_from_workspace: TStrategy) => strategy_from_workspace.id !== strategy_id
         );
+
+        // Persist first. Do not update the UI or close the dialog if storage fails.
+        await localForage.setItem('saved_workspaces', LZString.compress(JSON.stringify(updated_workspaces)));
         setDashboardStrategies(updated_workspaces);
-        // TODO: Need to move this to skeleton
-        localForage.setItem('saved_workspaces', LZString.compress(JSON.stringify(updated_workspaces)));
         await resetStrategiesAfterDelete(strategy_id, updated_workspaces);
         onToggleDeleteDialog(false);
+        setOpenSettings(NOTIFICATION_TYPE.BOT_DELETE);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (is_deleting || !selected_strategy_id) return;
+        setIsDeleting(true);
+        try {
+            await removeBotStrategy(selected_strategy_id);
+        } catch (error) {
+            // Keep the dialog open so the user can retry; do not force a page reload.
+            console.error('Unable to delete the saved bot:', error);
+        } finally {
+            setIsDeleting(false);
+        }
     };
     return (
         <div>
@@ -54,11 +75,7 @@ const DeleteDialog = observer(() => {
                 title={localize('Delete bot')}
                 is_visible={is_delete_modal_open}
                 confirm_button_text={localize('Yes, delete')}
-                onConfirm={() => {
-                    removeBotStrategy(selected_strategy_id);
-                    onToggleDeleteDialog(false);
-                    setOpenSettings(NOTIFICATION_TYPE.BOT_DELETE);
-                }}
+                onConfirm={handleDeleteConfirm}
                 cancel_button_text={localize('No')}
                 onCancel={() => {
                     onToggleDeleteDialog(false);
