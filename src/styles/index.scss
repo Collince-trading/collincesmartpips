@@ -5,7 +5,81 @@
 body {
     // Updated to use brand font variable from brand.config.json
     font-family: var(--brand-font-primary);
-    background: var(--general-main-1);
+    background: #080d1c;
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+}
+
+#root {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    background: transparent;
+}
+
+/* SmartPips animated AI atmosphere: subtle neural-grid and drifting light fields. */
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    inset: -18%;
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform, background-position;
+}
+
+body::before {
+    opacity: 0.62;
+    background:
+        radial-gradient(ellipse at 18% 22%, rgb(37 99 235 / 24%), transparent 34%),
+        radial-gradient(ellipse at 78% 26%, rgb(124 58 237 / 22%), transparent 32%),
+        radial-gradient(ellipse at 58% 82%, rgb(6 182 212 / 15%), transparent 36%),
+        linear-gradient(135deg, #080d1c 0%, #10152b 48%, #090f20 100%);
+    background-size: 140% 140%;
+    animation: smartpips-ai-drift 26s ease-in-out infinite alternate;
+}
+
+body::after {
+    opacity: 0.22;
+    background-image:
+        radial-gradient(circle, rgb(125 211 252 / 72%) 1px, transparent 1.7px),
+        linear-gradient(115deg, transparent 0 48%, rgb(96 165 250 / 12%) 49%, transparent 50% 100%),
+        linear-gradient(25deg, transparent 0 48%, rgb(167 139 250 / 10%) 49%, transparent 50% 100%);
+    background-size: 42px 42px, 180px 180px, 220px 220px;
+    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+    animation: smartpips-network-float 48s linear infinite;
+}
+
+@keyframes smartpips-ai-drift {
+    0% {
+        transform: translate3d(-1.5%, -1%, 0) scale(1);
+        background-position: 0% 0%;
+    }
+    50% {
+        transform: translate3d(1.5%, 1%, 0) scale(1.04);
+        background-position: 55% 45%;
+    }
+    100% {
+        transform: translate3d(-0.5%, 1.5%, 0) scale(1.02);
+        background-position: 100% 80%;
+    }
+}
+
+@keyframes smartpips-network-float {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        transform: translate3d(42px, 22px, 0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body::before,
+    body::after {
+        animation: none;
+    }
 }
 
 .icon-general-fill-path {
