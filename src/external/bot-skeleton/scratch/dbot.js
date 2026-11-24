@@ -376,13 +376,37 @@ class DBot {
         if (api_base.is_stopping) return;
 
         api_base.setIsRunning(false);
+        const interpreter_to_stop = this.interpreter;
 
-        await this.interpreter.stop();
-        this.is_bot_running = false;
-        this.interpreter = null;
-        this.interpreter = Interpreter();
-        await this.interpreter.bot.tradeEngine.watchTicks(this.symbol);
-        forgetAccumulatorsProposalRequest(this);
+        try {
+            // The interpreter can already have been disposed by a stop/error event.
+            if (interpreter_to_stop) {
+                await interpreter_to_stop.stop();
+            }
+        } finally {
+            this.is_bot_running = false;
+
+            // Restore a fresh interpreter even if the previous one failed to stop.
+            if (this.interpreter === interpreter_to_stop) {
+                this.interpreter = null;
+                this.interpreter = Interpreter();
+            }
+
+            // Tick resubscription is a convenience for the next run. A temporary
+            // market/socket failure here must not turn a successful stop into an
+            // application-level crash.
+            try {
+                await this.interpreter?.bot?.tradeEngine?.watchTicks?.(this.symbol);
+            } catch (error) {
+                console.warn('Bot stopped, but tick subscription could not be restored:', error);
+            }
+
+            try {
+                forgetAccumulatorsProposalRequest(this);
+            } catch (error) {
+                console.warn('Unable to clear accumulator proposal state after stopping:', error);
+            }
+        }
     }
 
     /**
