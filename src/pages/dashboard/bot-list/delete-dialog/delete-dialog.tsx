@@ -19,6 +19,7 @@ const DeleteDialog = observer(() => {
         is_delete_modal_open,
         onToggleDeleteDialog,
         selected_strategy_id,
+        setSelectedStrategyId,
         setDashboardStrategies,
         loadStrategyToBuilder,
         refreshStrategiesTheme,
@@ -33,7 +34,7 @@ const DeleteDialog = observer(() => {
             if (selected_strategy_id === deleted_strategy_id) {
                 // Keep the selected id in sync with the new list before refreshing
                 // the preview; otherwise the preview can point at a deleted strategy.
-                setDashboardStrategies(updated_workspaces);
+                setSelectedStrategyId(updated_workspaces[0].id);
                 await loadStrategyToBuilder(updated_workspaces[0], false);
             }
             await refreshStrategiesTheme();
